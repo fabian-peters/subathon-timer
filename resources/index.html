@@ -58,7 +58,7 @@
         <input type="color" id="timerShadowColorInput" />
       </div>
       <div class="colorInputContainer">
-        <label for="webhookEnabledInput">Webhook Enabled</label>
+        <label for="webhookEnabledInput">Enable Webhook</label>
         <input type="checkbox" id="webhookEnabledInput" />
       </div>
       <div>
@@ -68,6 +68,18 @@
       <div>
         <label for="webhookTriggerInput">Webhook Trigger Time</label>
         <input type="time" step="1" id="webhookTriggerInput" />
+      </div>
+      <div class="colorInputContainer">
+        <label for="timerHistoryEnabledInput">Enable Timer History</label>
+        <input type="checkbox" id="timerHistoryEnabledInput" />
+      </div>
+      <div>
+        <label for="timerHistoryIntervalInput">Timer History Interval (seconds)</label>
+        <input type="number" id="timerHistoryIntervalInput" />
+      </div>
+      <div class="colorInputContainer">
+        <label for="subHistoryEnabledInput">Enable Sub History</label>
+        <input type="checkbox" id="subHistoryEnabledInput" />
       </div>
       <button type="submit">Submit</button>
     </form>

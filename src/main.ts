@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 import { sendPause, startServer, updateConfigOnServer } from './server';
-import config from './config';
+import config from './types/config';
 import { listenForSubs, reloadListener } from './streamlabs';
 
 let win: BrowserWindow | undefined;

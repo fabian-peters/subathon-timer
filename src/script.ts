@@ -15,6 +15,9 @@
   (window as any).webhookEnabledInput.checked = config.WebhookEnabled;
   (window as any).webhookUrlInput.value = config.WebhookUrl;
   (window as any).webhookTriggerInput.valueAsNumber = config.WebhookTrigger;
+  (window as any).timerHistoryEnabledInput.checked = config.TimerHistoryEnabled;
+  (window as any).timerHistoryIntervalInput.value = config.TimerHistoryInterval;
+  (window as any).subHistoryEnabledInput.checked = config.SubHistoryEnabled;
 });
 
 const changePage = (page: 0 | 1) => {
@@ -43,7 +46,10 @@ const changePage = (page: 0 | 1) => {
     TimerShadowColor: (window as any).timerShadowColorInput.value,
     WebhookEnabled: (window as any).webhookEnabledInput.checked,
     WebhookUrl: (window as any).webhookUrlInput.value,
-    WebhookTrigger: (window as any).webhookTriggerInput.valueAsNumber
+    WebhookTrigger: (window as any).webhookTriggerInput.valueAsNumber,
+    TimerHistoryEnabled: (window as any).timerHistoryEnabledInput.checked,
+    TimerHistoryInterval: (window as any).timerHistoryIntervalInput.valueAsNumber,
+    SubHistoryEnabled: (window as any).subHistoryEnabledInput.checked
   });
   changePage(0);
 });

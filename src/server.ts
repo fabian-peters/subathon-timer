@@ -3,8 +3,10 @@ import type { Socket } from 'socket.io';
 import { Server } from 'socket.io';
 import * as http from 'http';
 import * as path from 'path';
-import type { Config } from './config';
-import config from './config';
+import type { Config } from './types/config';
+import config from './types/config';
+import type { History } from './types/history';
+import history from './types/history';
 
 const app = express();
 const server = http.createServer(app);
@@ -25,9 +27,14 @@ let socket: Socket | undefined;
 io.on('connection', s => {
   if (socket) socket.emit('error', 'only one widget allowed');
   socket = s;
+  socket.on('history', saveHistory)
   socket.emit('start', inTime);
   sendColors(config);
 });
+
+const saveHistory = (historyEntry: History) => {
+  history.push(historyEntry);
+}
 
 const sendColors = (newConfig: Config) =>
   socket &&
@@ -42,7 +49,10 @@ const sendColors = (newConfig: Config) =>
     // update webhook config
     webhookEnabled: newConfig.WebhookEnabled,
     webhookUrl: newConfig.WebhookUrl,
-    webhookTrigger: newConfig.WebhookTrigger
+    webhookTrigger: newConfig.WebhookTrigger,
+    // update timer history config
+    timerHistoryEnabled: newConfig.TimerHistoryEnabled,
+    timerHistoryInterval: newConfig.TimerHistoryInterval
   });
 
 export const updateConfigOnServer = (newConfig: Config) => {

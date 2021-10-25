@@ -52,9 +52,12 @@
       let refreshInterval = 10;
       let timeHistory = [];
       let drawLineIntervalId;
+      let intervalIdSendTimerHistory;
       let webhookUrl = "";
       let webhookTrigger = 0;
       let webhookEnabled = false;
+      let timerHistoryEnabled = false;
+      let timerHistoryInterval = 60;
 
       const setTime = newTime => {
         time = newTime;
@@ -141,15 +144,35 @@
         webhookEnabled = config.webhookEnabled;
         webhookUrl = config.webhookUrl;
         webhookTrigger = config.webhookTrigger / 1000; // stored in config in ms but we use seconds for the time
+
+        timerHistoryEnabled = config.timerHistoryEnabled;
+        timerHistoryInterval = config.timerHistoryInterval;
+        if (intervalIdSendTimerHistory) {
+          clearInterval(intervalIdSendTimerHistory);
+        }
+        if (timerHistoryEnabled) {
+          intervalIdSendTimerHistory = setInterval(sendTimerHistory, timerHistoryInterval * 1000);
+        }
       });
+
+      // count down timer every second // TODO only start on start?
       setInterval(() => {
         if (paused || hasReachedZero) return;
         setTime(time - 1);
         if (time === 0) {
+          sendTimerHistory(); // update history to include the 0
           hasReachedZero = true;
-          return;
         }
       }, 1000);
+
+      const sendTimerHistory = () => {
+        if (!timerHistoryEnabled || paused || hasReachedZero) return;
+
+        socket.emit('history', {
+          timestamp: new Date(),
+          time: time
+        })
+      }
 
       const drawLine = () => {
         timeHistory.shift();

@@ -16,6 +16,9 @@ export interface Config {
   WebhookEnabled: boolean;
   WebhookUrl: string;
   WebhookTrigger: number;
+  TimerHistoryEnabled: boolean;
+  TimerHistoryInterval: number;
+  SubHistoryEnabled: boolean;
 }
 
 export default new Proxy(JSON.parse(fs.readFileSync('./config.json').toString()) as Config, {
