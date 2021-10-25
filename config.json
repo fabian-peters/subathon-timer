@@ -13,5 +13,8 @@
   "RefreshInterval": 10,
   "WebhookUrl": "",
   "WebhookTrigger": 300000,
-  "WebhookEnabled": false
+  "WebhookEnabled": false,
+  "TimerHistoryEnabled": false,
+  "TimerHistoryInterval": 60,
+  "SubHistoryEnabled": false
 }
