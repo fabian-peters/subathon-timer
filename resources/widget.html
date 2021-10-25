@@ -197,7 +197,7 @@
         ctx.beginPath();
         ctx.moveTo(0, canvas.height * points[0]);
         for (let i = 1; i < points.length; i++) {
-          ctx.lineTo((i + 1) * (canvas.width / points.length), canvas.height * points[i]);
+          ctx.lineTo((i + 1) * (canvas.width / (points.length - 1)), canvas.height * points[i]);
         }
         ctx.stroke();
       };
