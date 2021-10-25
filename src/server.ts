@@ -15,7 +15,7 @@ let addTimeTier1 = config.AddTimeTier1;
 let addTimeTier2 = config.AddTimeTier2;
 let addTimeTier3 = config.AddTimeTier3;
 
-export const startServer = () => server.listen(4040);
+export const startServer = () => server.listen(config.Port); // TODO refresh if changed?
 
 app.get('/', (_req, res) => res.sendFile(path.join(__dirname, '..', 'resources/widget.html')));
 app.get('/socket.io.js', (_req, res) => res.sendFile(path.join(__dirname, '..', 'node_modules', 'socket.io', 'client-dist', 'socket.io.min.js')));
