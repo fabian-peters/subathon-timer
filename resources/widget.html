@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Subathon Timer</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      div {
+        width: 300px;
+        height: 200px;
+        border-radius: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      canvas {
+        position: fixed;
+        width: 300px;
+        height: 120px;
+      }
+      p {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        font-weight: bold;
+        font-size: 4em;
+        transform: translate(-50%, -50%);
+        margin: 0;
+        z-index: 5;
+      }
+    </style>
+    <script src="./socket.io.js"></script>
+  </head>
+  <body>
+    <p style="text-shadow: 0 0 10px transparent; color: transparent">0:00</p>
+    <div style="background: transparent">
+      <canvas></canvas>
+    </div>
+    <script>
+      let time = 0;
+      let paused = true;
+      let hasReachedZero = false;
+      let timespan = 0;
+      let refreshInterval = 10;
+      let timeHistory = [];
+      let drawLineIntervalId;
+      let webhookUrl = "";
+      let webhookTrigger = 0;
+      let webhookEnabled = false;
+
+      const setTime = newTime => {
+        time = newTime;
+        const hours = Math.floor(time / 3600),
+          minutes = Math.floor((time % 3600) / 60),
+          seconds = time % 60;
+        document.querySelector('p').innerText = `${hours ? `${hours}:${minutes < 10 ? '0' : ''}` : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        handleWebhooks();
+      };
+
+      const handleWebhooks = () => {
+        if (webhookEnabled && time === webhookTrigger) {
+          triggerWebhook();
+        }
+      };
+
+      const triggerWebhook = () => {
+        const Http = new XMLHttpRequest();
+        Http.open("POST", webhookUrl);
+        Http.send();
+
+        console.log("Triggered webhook!")
+
+        Http.onreadystatechange = () => {
+          console.log(Http.responseText); // TODO not working (in browser) because of CORS
+        };
+      };
+
+      const socket = io();
+      socket.on('start', msg => {
+        time = Math.floor(Number(msg) * 60);
+        timeHistory = new Array(timespan / refreshInterval);
+        drawLine();
+        drawLineIntervalId = setInterval(drawLine, refreshInterval * 1000);
+      });
+      socket.on('pause', msg => (paused = !paused));
+      socket.on('sub', msg => {
+        let i = Math.floor(Number(msg));
+        const interval = setInterval(() => {
+          if (i === 0) return clearInterval(interval);
+          setTime(time + 1);
+          i -= 1;
+        }, 25);
+      });
+      socket.on('error', msg => {
+        document.querySelector('div').innerText = msg;
+        paused = true;
+      });
+
+      const canvas = document.getElementsByTagName('canvas')[0];
+      const ctx = canvas.getContext('2d');
+      ctx.lineWidth = 5;
+
+      socket.on('colors', config => {
+        document.querySelector('div').style.background = config.bgColor;
+        document.querySelector('p').style.color = config.timerColor;
+        document.querySelector('p').style.textShadow = `0px 0px 10px ${config.timerShadowColor}`;
+        ctx.strokeStyle = config.lineColor;
+
+        let oldSize = timespan / refreshInterval;
+        timespan = config.timespan;
+        if (refreshInterval === config.refreshInterval && oldSize === timeHistory.length) { // only resize if the array was initialized
+          // interval is the same so we can copy the history
+          console.log("Resizing the history array.")
+          console.log("old history: " + timeHistory)
+          const newSize = timespan / refreshInterval;
+          console.log("newSize: " + newSize)
+          while (timeHistory.length > newSize) { timeHistory.shift() } // while bigger, delete oldest values
+          while (timeHistory.length < newSize) { timeHistory.unshift("") } // while smaller, add to the front (so there is no break)
+          console.log("new history: " + timeHistory)
+        } else {
+          // we need to update the interval and re-initialize the history
+          console.log("Resetting the history because refresh interval changed.")
+          refreshInterval = config.refreshInterval;
+          timeHistory = new Array(timespan / refreshInterval);
+
+          // also update the interval for drawLine
+          if (drawLineIntervalId) {
+            clearInterval(drawLineIntervalId);
+          }
+          drawLineIntervalId = setInterval(drawLine, refreshInterval * 1000);
+        }
+
+        webhookEnabled = config.webhookEnabled;
+        webhookUrl = config.webhookUrl;
+        webhookTrigger = config.webhookTrigger / 1000; // stored in config in ms but we use seconds for the time
+      });
+      setInterval(() => {
+        if (paused || hasReachedZero) return;
+        setTime(time - 1);
+        if (time === 0) {
+          hasReachedZero = true;
+          return;
+        }
+      }, 1000);
+
+      const drawLine = () => {
+        timeHistory.shift();
+        timeHistory.push(time);
+        console.log("history: " + timeHistory)
+        // console.log("timespan: " + timespan)
+        // console.log("refresh: " + refreshInterval)
+
+        // scale graph to fit
+        let min = Math.min.apply(Math, timeHistory.filter(value => value > 0));
+        let max = Math.max.apply(Math, timeHistory.filter(value => value > 0));
+        let points = [];
+        for (let time of timeHistory) {
+          if (Number.isInteger(time) && time > 0) {
+            let range = Math.max(max - min, 2 * timespan); // range = timespan would mean pretty steep curve even though nothing really happened so use at least twice the time span as vertical range
+            points.push(1 - ((time - min) / range));
+          }
+        }
+        // console.log("points: " + points)
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height * points[0]);
+        for (let i = 1; i < points.length; i++) {
+          ctx.lineTo((i + 1) * (canvas.width / points.length), canvas.height * points[i]);
+        }
+        ctx.stroke();
+      };
+    </script>
+  </body>
+</html>

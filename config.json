@@ -1,0 +1,17 @@
+{
+  "StreamLabsToken": "",
+  "Port": 4040,
+  "InTime": 60,
+  "AddTimeTier1": 60,
+  "AddTimeTier2": 90,
+  "AddTimeTier3": 120,
+  "BgColor": "#323232",
+  "LineColor": "#ff0000",
+  "TimerColor": "#ffc800",
+  "TimerShadowColor": "#323232",
+  "Timespan": 600,
+  "RefreshInterval": 10,
+  "WebhookUrl": "",
+  "WebhookTrigger": 300000,
+  "WebhookEnabled": false
+}

@@ -1,0 +1,62 @@
+body {
+  color: white;
+  background: #272727;
+  font-family: sans-serif;
+}
+#info {
+  text-align: center;
+}
+.controls {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+}
+.controls svg {
+  width: 50px;
+  height: 50px;
+  transition: opacity 0.25s ease;
+  cursor: pointer;
+}
+.controls svg:hover {
+  opacity: 0.75;
+}
+.controls svg:active {
+  opacity: 0.5;
+}
+#settings {
+  display: flex;
+  flex-direction: column;
+  justify-items: center;
+  align-items: center;
+  gap: 0.5em;
+}
+#settings div {
+  display: flex;
+  flex-direction: column;
+}
+input,
+button {
+  border-radius: 0.5em;
+  padding: 0.5em;
+  border: none;
+  color: white;
+  background: #4d4d4d;
+  font-size: 1em;
+  outline: none;
+  width: 250px;
+  box-sizing: border-box;
+}
+button {
+  cursor: pointer;
+}
+.colorInputContainer {
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  width: 250px;
+}
+.colorInputContainer input {
+  padding: 2px;
+  width: 30px;
+  height: 30px;
+}
