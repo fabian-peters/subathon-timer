@@ -17,7 +17,25 @@ let addTimeTier1 = config.addTimeTier1;
 let addTimeTier2 = config.addTimeTier2;
 let addTimeTier3 = config.addTimeTier3;
 
-export const startServer = () => server.listen(config.port); // TODO refresh if changed?
+export const startServer = () => {
+  if (server.listening) {
+    if ((server.address() as any).port === config.port) {
+      // already running on correct port
+      return;
+    } else {
+      console.log(`Restarting server on new port '${config.port}...'`);
+      if (socketTimer) socketTimer.disconnect();
+      if (socketHistory) socketHistory.disconnect();
+      server.close(() => {
+        server.listen(config.port) // restart on new port when server is closed
+        console.log('Restarted server on ', server.address());
+      });
+    }
+  } else {
+    server.listen(config.port);
+    console.log('Started server on ', server.address());
+  }
+}
 
 app.get('/', (_req, res) => res.sendFile(path.join(__dirname, '..', 'resources/widget.html')));
 app.get('/history', (_req, res) => res.sendFile(path.join(__dirname, '..', 'resources/history.html')));
@@ -55,6 +73,8 @@ const sendConfig = (newConfig: Config) => {
 }
 
 export const updateConfigOnServer = (newConfig: Config) => {
+  startServer() // restart on new port if necessary
+
   addTimeTier1 = newConfig.addTimeTier1;
   addTimeTier2 = newConfig.addTimeTier2;
   addTimeTier3 = newConfig.addTimeTier3;
