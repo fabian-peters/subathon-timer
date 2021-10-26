@@ -49,27 +49,20 @@ io.of('/history').on('connection', s => {
   if (socketHistory) socketHistory.emit('error', 'only one history widget allowed');
   socketHistory = s;
   socketHistory.emit('history-data', history);
-  sendConfig(config);
+  socketHistory.emit('config', config);
 });
 
 io.of('/timer').on('connection', s => {
   if (socketTimer) socketTimer.emit('error', 'only one timer widget allowed');
   socketTimer = s;
-  socketTimer.on('history', saveHistory);
-  socketTimer.emit('start', inTime);
-  sendConfig(config);
+  socketTimer.on('history', saveHistory); // TODO add reset to menu (ask on stop?)
+  socketTimer.emit('init', inTime);
+  socketTimer.emit('config', config);
 });
 
 const saveHistory = (historyEntry: History) => {
   history.push(historyEntry);
   socketHistory && socketHistory.emit('history-data', history);
-}
-
-const sendConfig = (newConfig: Config) => {
-  socketTimer &&
-  socketTimer.emit('config', newConfig);
-  socketHistory &&
-  socketHistory.emit('config', newConfig);
 }
 
 export const updateConfigOnServer = (newConfig: Config) => {
@@ -79,10 +72,14 @@ export const updateConfigOnServer = (newConfig: Config) => {
   addTimeTier2 = newConfig.addTimeTier2;
   addTimeTier3 = newConfig.addTimeTier3;
   inTime = newConfig.inTime;
-  sendConfig(newConfig);
+
+  socketTimer && socketTimer.emit('config', newConfig);
+  socketHistory && socketHistory.emit('config', newConfig);
 };
 
 export const sendPause = () => socketTimer && socketTimer.emit('pause');
+
+export const sendInit = () => socketTimer && socketTimer.emit('init', inTime);
 
 export const sendSub = (tier: string) => {
     let addTime;
