@@ -35,7 +35,7 @@ app.on('window-all-closed', () => {
 
 startServer();
 
-listenForSubs(config.StreamLabsToken);
+listenForSubs(config.streamLabsToken);
 
 ipcMain
   .on('pause', () => sendPause())
@@ -43,7 +43,7 @@ ipcMain
     for (let par in newConfig) {
       (config as any)[par] = newConfig[par];
     }
-    reloadListener(config.StreamLabsToken);
+    reloadListener(config.streamLabsToken);
     updateConfigOnServer(newConfig);
   });
 

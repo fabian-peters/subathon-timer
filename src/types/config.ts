@@ -1,24 +1,24 @@
 import * as fs from 'fs';
 
 export interface Config {
-  Port: number;
-  InTime: number;
-  AddTimeTier1: number;
-  AddTimeTier2: number;
-  AddTimeTier3: number;
-  Timespan: number;
-  RefreshInterval: number;
-  BgColor: string;
-  LineColor: string;
-  TimerColor: string;
-  StreamLabsToken: string;
-  TimerShadowColor: string;
-  WebhookEnabled: boolean;
-  WebhookUrl: string;
-  WebhookTrigger: number;
-  TimerHistoryEnabled: boolean;
-  TimerHistoryInterval: number;
-  SubHistoryEnabled: boolean;
+  port: number;
+  inTime: number;
+  addTimeTier1: number;
+  addTimeTier2: number;
+  addTimeTier3: number;
+  timespan: number;
+  refreshInterval: number;
+  bgColor: string;
+  lineColor: string;
+  timerColor: string;
+  streamLabsToken: string;
+  timerShadowColor: string;
+  webhookEnabled: boolean;
+  webhookUrl: string;
+  webhookTrigger: number;
+  timerHistoryEnabled: boolean;
+  timerHistoryInterval: number;
+  subHistoryEnabled: boolean;
 }
 
 export default new Proxy(JSON.parse(fs.readFileSync('./config.json').toString()) as Config, {

@@ -12,58 +12,57 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-let inTime = config.InTime;
-let addTimeTier1 = config.AddTimeTier1;
-let addTimeTier2 = config.AddTimeTier2;
-let addTimeTier3 = config.AddTimeTier3;
+let inTime = config.inTime;
+let addTimeTier1 = config.addTimeTier1;
+let addTimeTier2 = config.addTimeTier2;
+let addTimeTier3 = config.addTimeTier3;
 
-export const startServer = () => server.listen(config.Port); // TODO refresh if changed?
+export const startServer = () => server.listen(config.port); // TODO refresh if changed?
 
 app.get('/', (_req, res) => res.sendFile(path.join(__dirname, '..', 'resources/widget.html')));
+app.get('/history', (_req, res) => res.sendFile(path.join(__dirname, '..', 'resources/history.html')));
 app.get('/socket.io.js', (_req, res) => res.sendFile(path.join(__dirname, '..', 'node_modules', 'socket.io', 'client-dist', 'socket.io.min.js')));
 
-let socket: Socket | undefined;
+let socketTimer: Socket | undefined;
+let socketHistory: Socket | undefined;
 
-io.on('connection', s => {
-  if (socket) socket.emit('error', 'only one widget allowed');
-  socket = s;
-  socket.on('history', saveHistory)
-  socket.emit('start', inTime);
-  sendColors(config);
+io.of('/history').on('connection', s => {
+  // TODO allows multiple widget? store in array (not for timer!)
+  if (socketHistory) socketHistory.emit('error', 'only one history widget allowed');
+  socketHistory = s;
+  socketHistory.emit('history-data', history);
+  sendConfig(config);
+});
+
+io.of('/timer').on('connection', s => {
+  if (socketTimer) socketTimer.emit('error', 'only one timer widget allowed');
+  socketTimer = s;
+  socketTimer.on('history', saveHistory);
+  socketTimer.emit('start', inTime);
+  sendConfig(config);
 });
 
 const saveHistory = (historyEntry: History) => {
   history.push(historyEntry);
+  socketHistory && socketHistory.emit('history-data', history);
 }
 
-const sendColors = (newConfig: Config) =>
-  socket &&
-  socket.emit('colors', {
-    lineColor: newConfig.LineColor,
-    bgColor: newConfig.BgColor,
-    timerColor: newConfig.TimerColor,
-    timerShadowColor: newConfig.TimerShadowColor,
-    // also update other graph stuff
-    timespan: newConfig.Timespan,
-    refreshInterval: newConfig.RefreshInterval,
-    // update webhook config
-    webhookEnabled: newConfig.WebhookEnabled,
-    webhookUrl: newConfig.WebhookUrl,
-    webhookTrigger: newConfig.WebhookTrigger,
-    // update timer history config
-    timerHistoryEnabled: newConfig.TimerHistoryEnabled,
-    timerHistoryInterval: newConfig.TimerHistoryInterval
-  });
+const sendConfig = (newConfig: Config) => {
+  socketTimer &&
+  socketTimer.emit('config', newConfig);
+  socketHistory &&
+  socketHistory.emit('config', newConfig);
+}
 
 export const updateConfigOnServer = (newConfig: Config) => {
-  addTimeTier1 = newConfig.AddTimeTier1;
-  addTimeTier2 = newConfig.AddTimeTier2;
-  addTimeTier3 = newConfig.AddTimeTier3;
-  inTime = newConfig.InTime;
-  sendColors(newConfig);
+  addTimeTier1 = newConfig.addTimeTier1;
+  addTimeTier2 = newConfig.addTimeTier2;
+  addTimeTier3 = newConfig.addTimeTier3;
+  inTime = newConfig.inTime;
+  sendConfig(newConfig);
 };
 
-export const sendPause = () => socket && socket.emit('pause');
+export const sendPause = () => socketTimer && socketTimer.emit('pause');
 
 export const sendSub = (tier: string) => {
     let addTime;
@@ -77,5 +76,5 @@ export const sendSub = (tier: string) => {
         default: // Tier 1 = "1000", Prime might be "1" or "1000", and everything else should fallback to tier 1
             addTime = addTimeTier1;
     }
-    socket && socket.emit('sub', addTime);
+    socketTimer && socketTimer.emit('sub', addTime);
 }

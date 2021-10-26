@@ -14,7 +14,7 @@ export const listenForSubs = (token: string) => {
 
         // apparently 'sub' does not include info who gifted the sub so we cannot create a cumulative gift count per user
         //  -> update as soon as that information is available in API
-        if (config.SubHistoryEnabled) {
+        if (config.subHistoryEnabled) {
           subscription.push({
             timestamp: new Date(),
             name: sub.name,

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Subathon Timer History</title>
+  <style>
+      body {
+          font-family: sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          margin: 0;
+      }
+      div {
+          width: 300px;
+          height: 200px;
+          border-radius: 40px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+      }
+      canvas {
+          position: fixed;
+          width: 300px;
+          height: 120px;
+      }
+      p {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          font-weight: bold;
+          font-size: 4em;
+          transform: translate(-50%, -50%);
+          margin: 0;
+          z-index: 5;
+      }
+  </style>
+  <script src="./socket.io.js"></script>
+</head>
+<body>
+<!--<p style="text-shadow: 0 0 10px transparent; color: transparent">0:00</p> TODO add total time since start -->
+<div style="background: transparent">
+  <canvas></canvas>
+</div>
+<script>
+  let history = [];
+
+  const socket = io("/history");
+  socket.on('history-data', historyData => {
+    history = historyData
+    drawLine(history);
+  });
+  socket.on('error', msg => {
+    document.querySelector('div').innerText = msg;
+  });
+
+  const canvas = document.getElementsByTagName('canvas')[0];
+  const ctx = canvas.getContext('2d');
+  ctx.lineWidth = 5;
+
+  socket.on('config', config => {
+    document.querySelector('div').style.background = config.bgColor;
+    document.querySelector('p').style.color = config.timerColor;
+    document.querySelector('p').style.textShadow = `0px 0px 10px ${config.timerShadowColor}`;
+    ctx.strokeStyle = config.lineColor;
+    drawLine(history);
+  });
+
+  const getNormalizedValues = (values) => {
+    // TODO limit vertical zoom like in timer widget? probably not needed here
+    let min = Math.min.apply(Math, values);
+    let max = Math.max.apply(Math, values);
+
+    let normalized = [];
+    for (let value of values) {
+      if (Number.isInteger(value)) {
+        normalized.push((value - min) / (max - min));
+      }
+    }
+    return normalized;
+  };
+
+  const drawLine = (data) => {
+    // TODO add possibility to limit the timespan of the graph
+    data = data
+      .map(item => {
+        const timestamp = Date.parse(item.timestamp); // parse date to a number
+        return { ...item, timestamp };
+      })
+      .filter(item => Number.isInteger(item.timestamp) && Number.isInteger(item.time)) // remove invalid data points
+      .sort((a, b) => a.timestamp - b.timestamp); // sort by timestamp in case json file is weird
+
+    let dates = getNormalizedValues(data.map(value => value.timestamp));
+    let times = getNormalizedValues(data.map(value => value.time)).map(time => 1 - time);
+
+    // console.log('dates: ' + dates);
+    // console.log('times: ' + times);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.moveTo(canvas.width * dates[0], canvas.height * times[0]);
+    for (let i = 1; i < data.length; i++) {
+      ctx.lineTo(canvas.width * dates[i], canvas.height * times[i]);
+    }
+    ctx.stroke();
+  };
+</script>
+</body>
+</html>

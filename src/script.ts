@@ -1,23 +1,23 @@
 (window as any).bridge.on('config', (config: any) => {
-  (window as any).running.innerText = `Widget is running on http://localhost:${config.Port}`;
-  (window as any).streamLabsTokenInput.value = config.StreamLabsToken;
-  (window as any).addTimeTier1Input.value = config.AddTimeTier1;
-  (window as any).addTimeTier2Input.value = config.AddTimeTier2;
-  (window as any).addTimeTier3Input.value = config.AddTimeTier3;
-  (window as any).portInput.value = config.Port;
-  (window as any).inTimeInput.value = config.InTime;
-  (window as any).timespanInput.value = config.Timespan;
-  (window as any).refreshIntervalInput.value = config.RefreshInterval;
-  (window as any).bgColorInput.value = config.BgColor;
-  (window as any).lineColorInput.value = config.LineColor;
-  (window as any).timerColorInput.value = config.TimerColor;
-  (window as any).timerShadowColorInput.value = config.TimerShadowColor;
-  (window as any).webhookEnabledInput.checked = config.WebhookEnabled;
-  (window as any).webhookUrlInput.value = config.WebhookUrl;
-  (window as any).webhookTriggerInput.valueAsNumber = config.WebhookTrigger;
-  (window as any).timerHistoryEnabledInput.checked = config.TimerHistoryEnabled;
-  (window as any).timerHistoryIntervalInput.value = config.TimerHistoryInterval;
-  (window as any).subHistoryEnabledInput.checked = config.SubHistoryEnabled;
+  (window as any).running.innerText = `Widget is running on http://localhost:${config.port}`;
+  (window as any).streamLabsTokenInput.value = config.streamLabsToken;
+  (window as any).addTimeTier1Input.value = config.addTimeTier1;
+  (window as any).addTimeTier2Input.value = config.addTimeTier2;
+  (window as any).addTimeTier3Input.value = config.addTimeTier3;
+  (window as any).portInput.value = config.port;
+  (window as any).inTimeInput.value = config.inTime;
+  (window as any).timespanInput.value = config.timespan;
+  (window as any).refreshIntervalInput.value = config.refreshInterval;
+  (window as any).bgColorInput.value = config.bgColor;
+  (window as any).lineColorInput.value = config.lineColor;
+  (window as any).timerColorInput.value = config.timerColor;
+  (window as any).timerShadowColorInput.value = config.timerShadowColor;
+  (window as any).webhookEnabledInput.checked = config.webhookEnabled;
+  (window as any).webhookUrlInput.value = config.webhookUrl;
+  (window as any).webhookTriggerInput.valueAsNumber = config.webhookTrigger;
+  (window as any).timerHistoryEnabledInput.checked = config.timerHistoryEnabled;
+  (window as any).timerHistoryIntervalInput.value = config.timerHistoryInterval;
+  (window as any).subHistoryEnabledInput.checked = config.subHistoryEnabled;
 });
 
 const changePage = (page: 0 | 1) => {
@@ -32,24 +32,24 @@ const changePage = (page: 0 | 1) => {
 ((window as any).settings as HTMLFormElement).addEventListener('submit', e => {
   e.preventDefault();
   (window as any).bridge.send('config', {
-    StreamLabsToken: (window as any).streamLabsTokenInput.value,
-    Port: Number((window as any).portInput.value),
-    AddTimeTier1: (window as any).addTimeTier1Input.valueAsNumber,
-    AddTimeTier2: (window as any).addTimeTier2Input.valueAsNumber,
-    AddTimeTier3: (window as any).addTimeTier3Input.valueAsNumber,
-    InTime: (window as any).inTimeInput.valueAsNumber,
-    Timespan: (window as any).timespanInput.valueAsNumber,
-    RefreshInterval: (window as any).refreshIntervalInput.valueAsNumber,
-    BgColor: (window as any).bgColorInput.value,
-    LineColor: (window as any).lineColorInput.value,
-    TimerColor: (window as any).timerColorInput.value,
-    TimerShadowColor: (window as any).timerShadowColorInput.value,
-    WebhookEnabled: (window as any).webhookEnabledInput.checked,
-    WebhookUrl: (window as any).webhookUrlInput.value,
-    WebhookTrigger: (window as any).webhookTriggerInput.valueAsNumber,
-    TimerHistoryEnabled: (window as any).timerHistoryEnabledInput.checked,
-    TimerHistoryInterval: (window as any).timerHistoryIntervalInput.valueAsNumber,
-    SubHistoryEnabled: (window as any).subHistoryEnabledInput.checked
+    streamLabsToken: (window as any).streamLabsTokenInput.value,
+    port: Number((window as any).portInput.value),
+    addTimeTier1: (window as any).addTimeTier1Input.valueAsNumber,
+    addTimeTier2: (window as any).addTimeTier2Input.valueAsNumber,
+    addTimeTier3: (window as any).addTimeTier3Input.valueAsNumber,
+    inTime: (window as any).inTimeInput.valueAsNumber,
+    timespan: (window as any).timespanInput.valueAsNumber,
+    refreshInterval: (window as any).refreshIntervalInput.valueAsNumber,
+    bgColor: (window as any).bgColorInput.value,
+    lineColor: (window as any).lineColorInput.value,
+    timerColor: (window as any).timerColorInput.value,
+    timerShadowColor: (window as any).timerShadowColorInput.value,
+    webhookEnabled: (window as any).webhookEnabledInput.checked,
+    webhookUrl: (window as any).webhookUrlInput.value,
+    webhookTrigger: (window as any).webhookTriggerInput.valueAsNumber,
+    timerHistoryEnabled: (window as any).timerHistoryEnabledInput.checked,
+    timerHistoryInterval: (window as any).timerHistoryIntervalInput.valueAsNumber,
+    subHistoryEnabled: (window as any).subHistoryEnabledInput.checked
   });
   changePage(0);
 });

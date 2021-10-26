@@ -86,7 +86,7 @@
         };
       };
 
-      const socket = io();
+      const socket = io("/timer");
       socket.on('start', msg => {
         time = Math.floor(Number(msg) * 60);
         timeHistory = new Array(timespan / refreshInterval);
@@ -111,7 +111,7 @@
       const ctx = canvas.getContext('2d');
       ctx.lineWidth = 5;
 
-      socket.on('colors', config => {
+      socket.on('config', config => {
         document.querySelector('div').style.background = config.bgColor;
         document.querySelector('p').style.color = config.timerColor;
         document.querySelector('p').style.textShadow = `0px 0px 10px ${config.timerShadowColor}`;
@@ -121,13 +121,13 @@
         timespan = config.timespan;
         if (refreshInterval === config.refreshInterval && oldSize === timeHistory.length) { // only resize if the array was initialized
           // interval is the same so we can copy the history
-          console.log("Resizing the history array.")
-          console.log("old history: " + timeHistory)
+          // console.log("Resizing the history array.")
+          // console.log("old history: " + timeHistory)
           const newSize = timespan / refreshInterval;
-          console.log("newSize: " + newSize)
+          // console.log("newSize: " + newSize)
           while (timeHistory.length > newSize) { timeHistory.shift() } // while bigger, delete oldest values
           while (timeHistory.length < newSize) { timeHistory.unshift("") } // while smaller, add to the front (so there is no break)
-          console.log("new history: " + timeHistory)
+          // console.log("new history: " + timeHistory)
         } else {
           // we need to update the interval and re-initialize the history
           console.log("Resetting the history because refresh interval changed.")
