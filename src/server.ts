@@ -7,6 +7,8 @@ import type { Config } from './types/config';
 import config from './types/config';
 import type { History } from './types/history';
 import history from './types/history';
+import { dialog } from 'electron';
+import * as fs from 'fs';
 
 const app = express();
 const server = http.createServer(app);
@@ -69,6 +71,44 @@ const saveHistory = (historyEntry: History) => {
 export const resetHistory = () => { // TODO ask to reset when pressing stop?
   history.splice(0, history.length); // cannot assign empty so use splice to remove all entries
   socketHistory && socketHistory.emit('history-data', history);
+}
+
+// TODO improve export: make picture bigger, prettier, increase resolution
+export const exportHistory = () => {
+  if (socketHistory) {
+    socketHistory.emit('history-data', history); // make sure latest data is available
+    socketHistory.emit('history-export', config.bgColor, (dataUrl: string) => {
+      // decode data uri string to buffer
+      let image = decodeBase64(dataUrl);
+
+      // generate path
+      let date = new Date().toISOString();
+      date = date.substring(0, date.lastIndexOf('.')).replace(/[.:T]/g, '-');
+      let defaultName = path.join(__dirname, '..', 'history-' + date + '.png');
+
+      // open dialog to save file
+      let filename = dialog.showSaveDialogSync({ title: 'Save History as .png', defaultPath: defaultName });
+      if (filename) {
+        fs.writeFileSync(filename, image.data);
+      }
+    });
+  } else {
+    // history widget must be running TODO make export available without widget
+    dialog.showErrorBox('Error exporting history', 'Could not export history because the history widget is not connected.');
+  }
+}
+
+const decodeBase64 = (dataString: string) => {
+  let matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+
+  if (matches.length != 3) {
+    dialog.showErrorBox('Error exporting graph', 'Could not convert graph to png.');
+  }
+
+  return {
+    type: matches[1],
+    data: Buffer.from(matches[2], 'base64')
+  }
 }
 
 export const updateConfigOnServer = (newConfig: Config) => {
