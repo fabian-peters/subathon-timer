@@ -67,7 +67,7 @@ const saveHistory = (historyEntry: History) => {
 
 // TODO show oldest history timestamp on control screen (only if active?)
 export const resetHistory = () => { // TODO ask to reset when pressing stop?
-  history.splice(0, history.length); // cannot assign emtpy so use splice to remove all entries
+  history.splice(0, history.length); // cannot assign empty so use splice to remove all entries
   socketHistory && socketHistory.emit('history-data', history);
 }
 
