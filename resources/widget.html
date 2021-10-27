@@ -177,6 +177,7 @@
           if (!intervalIdCountDown && !intervalIdDrawLine) { // is initial start?
             console.log('Starting timer!');
             sendTimerHistory(); // update history to include the initial start
+            intervalIdSendTimerHistory = startTask(intervalIdSendTimerHistory, sendTimerHistory, timerHistoryInterval);
             intervalIdCountDown = startTask(intervalIdCountDown, countDown, 1);
             drawLine(); // immediately start the graph (might make it look a bit weird because the spacing might be ~1s off, but that should be fine)
             intervalIdDrawLine = startTask(intervalIdDrawLine, drawLine, refreshInterval);
