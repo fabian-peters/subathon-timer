@@ -47,7 +47,6 @@
 <script>
   // TODO move script to src/scripts or resources/scripts? typescript?
   // TODO clean up code, add comments (like widget.html)
-  // TODO use setting to hide total time
   let history = [];
   let intervalIdUpdateTime;
 
@@ -96,6 +95,8 @@
   ctx.lineWidth = 5;
 
   socket.on('config', config => {
+    document.querySelector('p').hidden = !config.timerHistoryShowTotal;
+
     document.querySelector('div').style.background = config.bgColor;
     document.querySelector('p').style.color = config.timerColor;
     document.querySelector('p').style.textShadow = `0px 0px 10px ${config.timerShadowColor}`;
