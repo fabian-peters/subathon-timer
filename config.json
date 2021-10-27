@@ -16,5 +16,6 @@
   "webhookEnabled": false,
   "timerHistoryEnabled": false,
   "timerHistoryInterval": 60,
+  "timerHistoryShowTotal": true,
   "subHistoryEnabled": false
 }

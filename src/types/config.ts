@@ -18,6 +18,7 @@ export interface Config {
   webhookTrigger: number;
   timerHistoryEnabled: boolean;
   timerHistoryInterval: number;
+  timerHistoryShowTotal: boolean;
   subHistoryEnabled: boolean;
 }
 

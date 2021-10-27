@@ -17,6 +17,7 @@
   (window as any).webhookTriggerInput.valueAsNumber = config.webhookTrigger;
   (window as any).timerHistoryEnabledInput.checked = config.timerHistoryEnabled;
   (window as any).timerHistoryIntervalInput.value = config.timerHistoryInterval;
+  (window as any).timerHistoryShowTotalInput.checked = config.timerHistoryShowTotal;
   (window as any).subHistoryEnabledInput.checked = config.subHistoryEnabled;
 });
 
@@ -49,6 +50,7 @@ const changePage = (page: 0 | 1) => {
     webhookTrigger: (window as any).webhookTriggerInput.valueAsNumber,
     timerHistoryEnabled: (window as any).timerHistoryEnabledInput.checked,
     timerHistoryInterval: (window as any).timerHistoryIntervalInput.valueAsNumber,
+    timerHistoryShowTotal: (window as any).timerHistoryShowTotalInput.checked,
     subHistoryEnabled: (window as any).subHistoryEnabledInput.checked
   });
   changePage(0);
