@@ -40,21 +40,43 @@
   <script src="./socket.io.js"></script>
 </head>
 <body>
-<!--<p style="text-shadow: 0 0 10px transparent; color: transparent">0:00</p> TODO add total time since start -->
+  <nobr><p style="text-shadow: 0 0 10px transparent; color: transparent">0:00</p></nobr>
 <div style="background: transparent">
   <canvas></canvas>
 </div>
 <script>
+  // TODO move script to src/scripts or resources/scripts? typescript?
+  // TODO clean up code, add comments (like widget.html)
   let history = [];
 
   const socket = io("/history");
   socket.on('history-data', historyData => {
     history = historyData
     drawLine(history);
+
+    let startTime = Math.ceil(Math.min.apply(Math, history.map(item => Date.parse(item.timestamp))) / 1000);
+    setInterval(() => {
+      let currentTime = Math.floor(Date.now() / 1000);
+      let difference = currentTime - startTime;
+      if (Number.isInteger(difference)) {
+        updateTime(difference);
+      }
+    }, 1000);
   });
   socket.on('error', msg => {
     document.querySelector('div').innerText = msg;
   });
+
+  const updateTime = time => {
+    const days = Math.floor(time / 86400),
+      hours = Math.floor((time % 86400) / 3600),
+      minutes = Math.floor((time % 3600) / 60),
+      seconds = time % 60;
+    // console.log(days + 'd ' + hours + 'h ' + minutes + 'min ' + seconds + 's')
+    document.querySelector('p').innerText = `${days ? `${days}d ` : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
+
+    // TODO add webhooks for total time?
+  };
 
   const canvas = document.getElementsByTagName('canvas')[0];
   const ctx = canvas.getContext('2d');
