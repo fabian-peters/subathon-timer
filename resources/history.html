@@ -49,26 +49,38 @@
   // TODO clean up code, add comments (like widget.html)
   // TODO use setting to hide total time
   let history = [];
+  let intervalIdUpdateTime;
 
   const socket = io("/history");
   socket.on('history-data', historyData => {
     history = historyData
     drawLine(history);
 
-    let startTime = Math.ceil(Math.min.apply(Math, history.map(item => Date.parse(item.timestamp))) / 1000);
-    setInterval(() => {
-      let currentTime = Math.floor(Date.now() / 1000);
-      let difference = currentTime - startTime;
-      if (Number.isInteger(difference)) {
-        updateTime(difference);
+    console.log('history: ' + history.map(item => Date.parse(item.timestamp)));
+    if (history.length === 0) {
+      if (intervalIdUpdateTime) { // stop update if history was reset
+        stopTask(intervalIdUpdateTime);
       }
-    }, 1000);
+      setTime(0);
+    } else {
+      let startTime = Math.floor(Math.min.apply(Math, history.map(item => Date.parse(item.timestamp))) / 1000);
+      updateTime(startTime);
+      intervalIdUpdateTime = startTask(intervalIdUpdateTime, () => updateTime(startTime), 1);
+    }
   });
   socket.on('error', msg => {
     document.querySelector('div').innerText = msg;
   });
 
-  const updateTime = time => {
+  const updateTime = (startTime) => {
+    let currentTime = Math.floor(Date.now() / 1000);
+    let timeSinceStart = currentTime - startTime;
+    if (Number.isInteger(timeSinceStart)) {
+      setTime(timeSinceStart);
+    }
+  }
+
+  const setTime = time => {
     const days = Math.floor(time / 86400),
       hours = Math.floor((time % 86400) / 3600),
       minutes = Math.floor((time % 3600) / 60),
@@ -90,6 +102,33 @@
     ctx.strokeStyle = config.lineColor;
     drawLine(history);
   });
+
+  /**
+   * Run a task at a certain interval.
+   * If it is already running, stop the old interval first.
+   *
+   * @param intervalId the intervalId for this task
+   * @param task the task/function to execute
+   * @param interval the interval to run the task (in seconds)
+   * @returns {number}
+   */
+  const startTask = (intervalId, task, interval) => {
+    stopTask(intervalId)
+    return setInterval(task, interval * 1000);
+  };
+
+  /**
+   * Stop the task/interval with the given id.
+   *
+   * @param intervalId the id of the interval to stop
+   * @returns {null} null to reset intervalId
+   */
+  const stopTask = (intervalId) => {
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
+    return null;
+  };
 
   const getNormalizedValues = (values) => {
     // TODO limit vertical zoom like in timer widget? probably not needed here

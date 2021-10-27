@@ -55,13 +55,19 @@ io.of('/history').on('connection', s => {
 io.of('/timer').on('connection', s => {
   if (socketTimer) socketTimer.emit('error', 'only one timer widget allowed');
   socketTimer = s;
-  socketTimer.on('history', saveHistory); // TODO add reset to menu (ask on stop?)
+  socketTimer.on('history', saveHistory);
   socketTimer.emit('init', inTime);
   socketTimer.emit('config', config);
 });
 
 const saveHistory = (historyEntry: History) => {
   history.push(historyEntry);
+  socketHistory && socketHistory.emit('history-data', history);
+}
+
+// TODO show oldest history timestamp on control screen (only if active?)
+export const resetHistory = () => { // TODO ask to reset when pressing stop?
+  history.splice(0, history.length); // cannot assign emtpy so use splice to remove all entries
   socketHistory && socketHistory.emit('history-data', history);
 }
 

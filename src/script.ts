@@ -58,3 +58,5 @@ const changePage = (page: 0 | 1) => {
 
 ((window as any).pauseButton as HTMLButtonElement).addEventListener('click', () => (window as any).bridge.send('pause'));
 ((window as any).stopButton as HTMLButtonElement).addEventListener('click', () => (window as any).bridge.send('stop')); // TODO add confirmation?
+(window as any).timerHistoryResetButton.addEventListener('click', () => (window as any).bridge.send('history-reset'));
+// (window as any).timerHistoryExportButton.addEventListener('click', () => ); TODO export graph as png, svg?

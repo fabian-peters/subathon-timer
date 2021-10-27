@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
-import { sendInit, sendPause, startServer, updateConfigOnServer } from './server';
+import { resetHistory, sendInit, sendPause, startServer, updateConfigOnServer } from './server';
 import config from './types/config';
 import { listenForSubs, reloadListener } from './streamlabs';
 
@@ -40,6 +40,7 @@ listenForSubs(config.streamLabsToken);
 ipcMain
   .on('pause', sendPause)
   .on('stop', sendInit)
+  .on('history-reset', resetHistory)
   .on('config', (_event, newConfig) => {
     for (let par in newConfig) {
       (config as any)[par] = newConfig[par];
