@@ -17,9 +17,11 @@ export interface Config {
   webhookUrl: string;
   webhookTrigger: number;
   timerHistoryEnabled: boolean;
-  timerHistoryInterval: number;
   timerHistoryShowTotal: boolean;
+  timerHistoryInterval: number;
   subHistoryEnabled: boolean;
+  subHistoryShowTotal: boolean;
+  subHistoryRefresh: number;
 }
 
 export default new Proxy(JSON.parse(fs.readFileSync('./config.json').toString()) as Config, {

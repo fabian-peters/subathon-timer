@@ -79,13 +79,13 @@
         <label for="timerHistoryEnabledInput">Enable Timer History</label>
         <input type="checkbox" id="timerHistoryEnabledInput" />
       </div>
-      <div>
-        <label for="timerHistoryIntervalInput">Timer History Interval (seconds)</label>
-        <input type="number" id="timerHistoryIntervalInput" />
-      </div>
       <div class="colorInputContainer">
         <label for="timerHistoryShowTotalInput">Show Total Time</label>
         <input type="checkbox" id="timerHistoryShowTotalInput" />
+      </div>
+      <div>
+        <label for="timerHistoryIntervalInput">Timer History Interval (seconds)</label>
+        <input type="number" id="timerHistoryIntervalInput" />
       </div>
       <button type="button" id="timerHistoryResetButton">Reset Timer History</button>
       <button type="button" id="timerHistoryExportButton">Export Timer History Graph</button>
@@ -94,7 +94,17 @@
         <label for="subHistoryEnabledInput">Enable Sub History</label>
         <input type="checkbox" id="subHistoryEnabledInput" />
       </div>
-      <p>Widget Coming Soon!</p>
+      <div class="colorInputContainer">
+        <label for="subHistoryShowTotalInput">Show Total Sub Count</label>
+        <input type="checkbox" id="subHistoryShowTotalInput" />
+      </div>
+      <div>
+        <label for="subHistoryRefreshInput">Sub History Refresh (seconds)</label>
+        <input type="number" id="subHistoryRefreshInput" />
+      </div>
+      <button type="button" id="subHistoryResetButton">Reset Sub History</button>
+      <button type="button" id="subHistoryExportButton">Export Sub History Graph</button>
+      <hr style='width: 80%'>
       <button type="submit">Submit</button>
     </form>
     <section id="info">

@@ -16,9 +16,11 @@
   (window as any).webhookUrlInput.value = config.webhookUrl;
   (window as any).webhookTriggerInput.valueAsNumber = config.webhookTrigger;
   (window as any).timerHistoryEnabledInput.checked = config.timerHistoryEnabled;
-  (window as any).timerHistoryIntervalInput.value = config.timerHistoryInterval;
   (window as any).timerHistoryShowTotalInput.checked = config.timerHistoryShowTotal;
+  (window as any).timerHistoryIntervalInput.value = config.timerHistoryInterval;
   (window as any).subHistoryEnabledInput.checked = config.subHistoryEnabled;
+  (window as any).subHistoryShowTotalInput.checked = config.subHistoryShowTotal;
+  (window as any).subHistoryRefreshInput.value = config.subHistoryRefresh;
 });
 
 const changePage = (page: 0 | 1) => {
@@ -49,9 +51,11 @@ const changePage = (page: 0 | 1) => {
     webhookUrl: (window as any).webhookUrlInput.value,
     webhookTrigger: (window as any).webhookTriggerInput.valueAsNumber,
     timerHistoryEnabled: (window as any).timerHistoryEnabledInput.checked,
-    timerHistoryInterval: (window as any).timerHistoryIntervalInput.valueAsNumber,
     timerHistoryShowTotal: (window as any).timerHistoryShowTotalInput.checked,
-    subHistoryEnabled: (window as any).subHistoryEnabledInput.checked
+    timerHistoryInterval: (window as any).timerHistoryIntervalInput.valueAsNumber,
+    subHistoryEnabled: (window as any).subHistoryEnabledInput.checked,
+    subHistoryShowTotal: (window as any).subHistoryShowTotalInput.checked,
+    subHistoryRefresh: (window as any).subHistoryRefreshInput.valueAsNumber
   });
   changePage(0);
 });
@@ -60,3 +64,5 @@ const changePage = (page: 0 | 1) => {
 ((window as any).stopButton as HTMLButtonElement).addEventListener('click', () => (window as any).bridge.send('stop')); // TODO add confirmation?
 (window as any).timerHistoryResetButton.addEventListener('click', () => (window as any).bridge.send('history-reset'));
 (window as any).timerHistoryExportButton.addEventListener('click', () => (window as any).bridge.send('history-export'));
+(window as any).subHistoryResetButton.addEventListener('click', () => (window as any).bridge.send('subs-reset'));
+(window as any).subHistoryExportButton.addEventListener('click', () => (window as any).bridge.send('subs-export'));

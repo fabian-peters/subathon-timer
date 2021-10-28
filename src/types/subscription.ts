@@ -3,7 +3,7 @@ import * as fs from 'fs';
 export interface Subscription {
   timestamp: Date;
   name: string;
-  sub_plan: string;
+  tier: string;
 }
 
 export default new Proxy(JSON.parse(fs.readFileSync('./subs.json').toString()) as [Subscription], {
