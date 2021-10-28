@@ -78,7 +78,7 @@ const saveHistory = (historyEntry: History) => {
   socketHistory && socketHistory.emit('history-data', history);
 }
 
-// TODO show oldest history timestamp on control screen (only if active?)
+// TODO [#17] show oldest history timestamp on control screen (only if active?)
 export const resetHistory = () => { // TODO ask to reset when pressing stop?
   history.splice(0, history.length); // cannot assign empty so use splice to remove all entries
   socketHistory && socketHistory.emit('history-data', history);
@@ -109,7 +109,7 @@ export const exportHistory = () => {
   }
 }
 
-// TODO show sub count / oldest sub timestamp on control screen (only if active?)
+// TODO [#17] show sub count / oldest sub timestamp on control screen (only if active?)
 export const resetSubHistory = () => { // TODO ask to reset when pressing stop?
   subscription.splice(0, subscription.length); // cannot assign empty so use splice to remove all entries
   socketSubs && socketSubs.emit('subs-data', history);
