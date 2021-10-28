@@ -2,7 +2,12 @@
   "name": "subathon-timer",
   "version": "0.3.0",
   "description": "A timer widget for Streamlabs that increases for every subscription you get.",
-  "keywords": ["subathon", "timer", "twitch", "streamlabs"],
+  "keywords": [
+    "subathon",
+    "timer",
+    "twitch",
+    "streamlabs"
+  ],
   "homepage": "https://github.com/fabian-peters/subathon-timer/",
   "repository": "github:fabian-peters/subathon-timer",
   "bugs": "https://github.com/fabian-peters/subathon-timer/issues",
@@ -17,7 +22,8 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "start": "npm run build && electron ./dist/main.js"
+    "start": "npm run build && electron ./dist/main.js",
+    "package": "electron-packager . --overwrite --out=releases --ignore='\\.idea'"
   },
   "main": "dist/main.js",
   "devDependencies": {
