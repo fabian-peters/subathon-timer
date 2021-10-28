@@ -14,8 +14,10 @@
   "webhookUrl": "",
   "webhookTrigger": 300000,
   "webhookEnabled": false,
-  "timerHistoryEnabled": false,
+  "timerHistoryEnabled": true,
   "timerHistoryInterval": 60,
   "timerHistoryShowTotal": true,
-  "subHistoryEnabled": false
+  "subHistoryEnabled": true,
+  "subHistoryShowTotal": true,
+  "subHistoryRefresh": 20
 }
