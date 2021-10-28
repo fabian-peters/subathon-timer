@@ -23,7 +23,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "start": "npm run build && electron ./dist/main.js",
-    "package": "electron-packager . --overwrite --out=releases --ignore='\\.idea'"
+    "package": "npm run build && electron-packager . --overwrite --out=releases --ignore='\\.idea'"
   },
   "main": "dist/main.js",
   "devDependencies": {
