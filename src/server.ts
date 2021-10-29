@@ -10,6 +10,7 @@ import history from './types/history';
 import { dialog } from 'electron';
 import * as fs from 'fs';
 import subscription, { Subscription } from './types/subscription';
+import { sendStartTimes } from './main';
 
 const app = express();
 const server = http.createServer(app);
@@ -76,12 +77,13 @@ io.of('/timer').on('connection', s => {
 const saveHistory = (historyEntry: History) => {
   history.push(historyEntry);
   socketHistory && socketHistory.emit('history-data', history);
+  sendStartTimes();
 }
 
-// TODO [#17] show oldest history timestamp on control screen (only if active?)
 export const resetHistory = () => { // TODO ask to reset when pressing stop?
   history.splice(0, history.length); // cannot assign empty so use splice to remove all entries
   socketHistory && socketHistory.emit('history-data', history);
+  sendStartTimes();
 }
 
 // TODO improve export: make picture bigger, prettier, increase resolution
@@ -109,10 +111,10 @@ export const exportHistory = () => {
   }
 }
 
-// TODO [#17] show sub count / oldest sub timestamp on control screen (only if active?)
 export const resetSubHistory = () => { // TODO ask to reset when pressing stop?
   subscription.splice(0, subscription.length); // cannot assign empty so use splice to remove all entries
   socketSubs && socketSubs.emit('subs-data', subscription);
+  sendStartTimes();
 }
 
 // TODO improve export: make picture bigger, prettier, increase resolution
@@ -193,4 +195,6 @@ export const sendSub = (sub: Subscription) => {
     subscription.push(sub);
     socketSubs && socketSubs.emit('subs-data', subscription);
   }
+
+  sendStartTimes();
 }

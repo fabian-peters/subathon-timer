@@ -12,6 +12,8 @@ import {
 } from './server';
 import config from './types/config';
 import { listenForSubs, reloadListener } from './streamlabs';
+import history from './types/history';
+import subscription from './types/subscription';
 
 let win: BrowserWindow | undefined;
 
@@ -29,7 +31,22 @@ const createWindow = async () => {
   win.removeMenu();
   await win.loadFile(path.join(__dirname, '../resources/index.html'));
   win.webContents.send('config', JSON.parse(JSON.stringify(config)));
-};
+  sendStartTimes()
+}
+
+export const sendStartTimes = () => {
+  if (!win) return;
+
+  // @ts-ignore
+  let historyStartTime = new Date(Math.min(...(history.map(value => Date.parse(value.timestamp)))));
+  // @ts-ignore
+  let subsStartTime = new Date(Math.min(...(subscription.map(value => Date.parse(value.timestamp)))));
+
+  win.webContents.send('update-start-times', {
+    history: historyStartTime,
+    subs: subsStartTime
+  });
+}
 
 app.on('ready', () => {
   createWindow();

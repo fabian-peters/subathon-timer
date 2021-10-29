@@ -23,6 +23,20 @@
   (window as any).subHistoryRefreshInput.value = config.subHistoryRefresh;
 });
 
+(window as any).bridge.on('update-start-times', (startTimes: any) => {
+  if (isNaN(startTimes.history)) {
+    (window as any).historyStart.innerText = `No timer history found`;
+  } else {
+    (window as any).historyStart.innerText = `Timer history started at ${startTimes.history.toLocaleString()}`;
+  }
+
+  if (isNaN(startTimes.subs)) {
+    (window as any).subsStart.innerText = `No sub history found`;
+  } else {
+    (window as any).subsStart.innerText = `Sub history started at ${startTimes.subs.toLocaleString()}`;
+  }
+});
+
 const changePage = (page: 0 | 1) => {
   (window as any).settings.style.display = ['none', 'flex'][page];
   (window as any).info.style.display = ['unset', 'none'][page];
