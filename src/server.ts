@@ -112,7 +112,7 @@ export const exportHistory = () => {
 // TODO [#17] show sub count / oldest sub timestamp on control screen (only if active?)
 export const resetSubHistory = () => { // TODO ask to reset when pressing stop?
   subscription.splice(0, subscription.length); // cannot assign empty so use splice to remove all entries
-  socketSubs && socketSubs.emit('subs-data', history);
+  socketSubs && socketSubs.emit('subs-data', subscription);
 }
 
 // TODO improve export: make picture bigger, prettier, increase resolution
