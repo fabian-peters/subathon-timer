@@ -34,6 +34,7 @@ const changePage = (page: 0 | 1) => {
 
 ((window as any).settings as HTMLFormElement).addEventListener('submit', e => {
   e.preventDefault();
+  (window as any).running.innerText = `Widget is running on http://localhost:${Number((window as any).portInput.value)}`;
   (window as any).bridge.send('config', {
     streamLabsToken: (window as any).streamLabsTokenInput.value,
     port: Number((window as any).portInput.value),
