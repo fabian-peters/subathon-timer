@@ -8,8 +8,11 @@ export const listenForSubs = (token: string) => {
   socket.on('event', (event: any) => {
     if (event.for && event.for === 'twitch_account' && (event.type === 'subscription' || event.type === 'resub')) {
       for (const sub of event.message) {
-        console.log("new sub! tier: " + sub.sub_plan);
-        sendSub(sub.sub_plan);
+        sendSub({
+          timestamp: new Date(),
+          name: sub.name,
+          tier: sub.sub_plan
+        });
       }
     }
   });

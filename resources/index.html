@@ -8,82 +8,134 @@
   <body>
     <form id="settings" style="display: none">
       <button type="button" id="backButton">Back</button>
+      <hr style='width: 80%'>
       <h1>Settings</h1>
+      <h2>General</h2>
       <div>
-        <label for="streamLabsTokenInput">StreamLabs Token</label>
+        <label for="streamLabsTokenInput" title="The Socket API token to connect to your account and receive subscription info.">Streamlabs Token</label>
         <input type="text" id="streamLabsTokenInput" />
       </div>
       <div>
-        <label for="portInput">Port</label>
+        <label for="portInput" title="The port on which to listen for connections.">Port</label>
         <input type="text" accept="[0-9]+" id="portInput" />
       </div>
+      <h2>Timer Widget</h2>
       <div>
-        <label for="inTimeInput">Initial Time (minutes)</label>
+        <label for="inTimeInput" title='The initial time at which the timer starts.'>Initial Time (minutes)</label>
         <input type="number" id="inTimeInput" />
       </div>
+      <hr style='width: 35%'>
       <div>
-        <label for="addTimeTier1Input">Additional Time Tier 1 (seconds)</label>
+        <label for="addTimeTier1Input" title='The additional time that gets added to the timer for a Tier 1 or Prime subscription.'>Additional Time Tier 1 (seconds)</label>
         <input type="number" id="addTimeTier1Input" />
       </div>
       <div>
-        <label for="addTimeTier2Input">Additional Time Tier 2 (seconds)</label>
+        <label for="addTimeTier2Input" title='The additional time that gets added to the timer for a Tier 2 subscription.'>Additional Time Tier 2 (seconds)</label>
         <input type="number" id="addTimeTier2Input" />
       </div>
       <div>
-        <label for="addTimeTier3Input">Additional Time Tier 3 (seconds)</label>
+        <label for="addTimeTier3Input" title='The additional time that gets added to the timer for a Tier 3 subscription.'>Additional Time Tier 3 (seconds)</label>
         <input type="number" id="addTimeTier3Input" />
       </div>
+      <hr style='width: 35%'>
       <div>
-        <label for="timespanInput">Graph Timespan (seconds)</label>
+        <label for="timespanInput" title='The timespan how far back the graph shows the time, e.g. 120 means the graph shows the time in the past 2 minutes.'>Graph Timespan (seconds)</label>
         <input type="number" id="timespanInput" />
       </div>
       <div>
-        <label for="refreshIntervalInput">Graph Refresh (seconds)</label>
+        <label for="refreshIntervalInput" title='How often the graph gets refreshed, e.g. 10 means the graph is refreshed every 10s.'>Graph Refresh (seconds)</label>
         <input type="number" id="refreshIntervalInput" />
       </div>
+      <hr style='width: 35%'>
       <div class="colorInputContainer">
-        <label for="bgColorInput">Background Color</label>
+        <label for="timerHistoryEnabledInput" title='Determines whether the timer history will be saved to the history.json file.'>Save Timer History</label>
+        <input type="checkbox" id="timerHistoryEnabledInput" />
+      </div>
+      <div>
+        <label for="timerHistoryIntervalInput" title='How often the current time is saved to the history.json file, e.g. 60 means the file is updated once every minute.'>Timer History Interval (seconds)</label>
+        <input type="number" id="timerHistoryIntervalInput" />
+      </div>
+      <div class="colorInputContainer">
+        <label for="subHistoryEnabledInput" title='Determines whether the subscription history will be saved to the subs.json file.'>Save Sub History</label>
+        <input type="checkbox" id="subHistoryEnabledInput" />
+      </div>
+      <h2>Timer History Widget</h2>
+      <div class="colorInputContainer">
+        <label for="timerHistoryShowTotalInput" title='Show or hide the total time in the history widget.'>Show Total Time</label>
+        <input type="checkbox" id="timerHistoryShowTotalInput" />
+      </div>
+      <hr style='width: 35%'>
+      <button type="button" id="timerHistoryResetButton" title='Delete the currently stored timer history. You will lose all data in the history.json file.'>Reset Timer History</button>
+      <button type="button" id="timerHistoryExportButton" title='Export the current timer history graph as PNG.'>Export Timer History Graph</button>
+      <h2>Sub History Widget</h2>
+      <div class="colorInputContainer">
+        <label for="subHistoryShowTotalInput" title='Show or hide the total number of new subscriptions in the subs widget.'>Show Total Sub Count</label>
+        <input type="checkbox" id="subHistoryShowTotalInput" />
+      </div>
+      <div>
+        <label for="subHistoryRefreshInput" title='How often the graph gets refreshed, e.g. 10 means the graph is refreshed every 10s. It is automatically updated when a new sub comes in.'>Sub History Refresh (seconds)</label>
+        <input type="number" id="subHistoryRefreshInput" />
+      </div>
+      <hr style='width: 35%'>
+      <button type="button" id="subHistoryResetButton" title='Delete the currently stored subscription history. You will lose all data in the subs.json file.'>Reset Sub History</button>
+      <button type="button" id="subHistoryExportButton" title='Export the current subscription history graph as PNG.'>Export Sub History Graph</button>
+      <h2>Colors (All Widgets)</h2>
+      <div class="colorInputContainer">
+        <label for="bgColorInput" title='The color of the background.'>Background Color</label>
         <input type="color" id="bgColorInput" />
       </div>
       <div class="colorInputContainer">
-        <label for="lineColorInput">Line Color</label>
+        <label for="lineColorInput" title='The color of the line graph.'>Line Color</label>
         <input type="color" id="lineColorInput" />
       </div>
       <div class="colorInputContainer">
-        <label for="timerColorInput">Timer Color</label>
+        <label for="timerColorInput" title='The color of the timer/sub count.'>Timer Color</label>
         <input type="color" id="timerColorInput" />
       </div>
       <div class="colorInputContainer">
-        <label for="timerShadowColorInput">Timer Shadow Color</label>
+        <label for="timerShadowColorInput" title='The color of the shadow/glow of the timer/sub count. Use the same color as the background to disable.'>Timer Shadow Color</label>
         <input type="color" id="timerShadowColorInput" />
       </div>
+      <h2>Webhooks</h2>
       <div class="colorInputContainer">
-        <label for="webhookEnabledInput">Webhook Enabled</label>
+        <label for="webhookEnabledInput" title='Enable or disable triggering the configured webhook.'>Enable Timer Webhook</label>
         <input type="checkbox" id="webhookEnabledInput" />
       </div>
       <div>
-        <label for="webhookUrlInput">Webhook URL</label>
+        <label for="webhookUrlInput" title='The URL of the webhook to call.'>Webhook URL</label>
         <input type="text" id="webhookUrlInput" />
       </div>
       <div>
-        <label for="webhookTriggerInput">Webhook Trigger Time</label>
+        <label for="webhookTriggerInput" title='The time at which the webhook should be triggered.'>Webhook Trigger Time</label>
         <input type="time" step="1" id="webhookTriggerInput" />
       </div>
+      <hr style='width: 80%'>
       <button type="submit">Submit</button>
     </form>
     <section id="info">
       <div class="controls">
-        <svg viewBox="0 0 24 24" id="pauseButton">
-          <path fill="currentColor" d="M3,5V19L11,12M13,19H16V5H13M18,5V19H21V5" />
-        </svg>
-        <svg viewBox="0 0 24 24" id="settingsButton">
-          <path
-            fill="currentColor"
-            d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
-          />
-        </svg>
+        <div title='Start / Pause'>
+          <svg viewBox="0 0 24 24" id="pauseButton">
+            <path fill="currentColor" d="M3,5V19L11,12M13,19H16V5H13M18,5V19H21V5" />
+          </svg>
+        </div>
+        <div title='Stop'>
+          <svg viewBox="0 0 24 24" id="stopButton">
+            <rect height="16" width="16" y="4" x="4" fill="currentColor"/>
+          </svg>
+        </div>
+        <div title='Settings'>
+          <svg viewBox="0 0 24 24" id="settingsButton">
+            <path
+              fill="currentColor"
+              d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
+            />
+          </svg>
+        </div>
       </div>
       <p id="running"></p>
+      <p id='historyStart'></p>
+      <p id='subsStart'></p>
     </section>
     <script src='../dist/script.js'></script>
   </body>

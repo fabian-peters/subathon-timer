@@ -1,8 +1,19 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
-import { sendPause, startServer, updateConfigOnServer } from './server';
-import config from './config';
+import {
+  exportHistory,
+  exportSubHistory,
+  resetHistory,
+  resetSubHistory,
+  sendInit,
+  sendPause,
+  startServer,
+  updateConfigOnServer
+} from './server';
+import config from './types/config';
 import { listenForSubs, reloadListener } from './streamlabs';
+import history from './types/history';
+import subscription from './types/subscription';
 
 let win: BrowserWindow | undefined;
 
@@ -20,7 +31,22 @@ const createWindow = async () => {
   win.removeMenu();
   await win.loadFile(path.join(__dirname, '../resources/index.html'));
   win.webContents.send('config', JSON.parse(JSON.stringify(config)));
-};
+  sendStartTimes()
+}
+
+export const sendStartTimes = () => {
+  if (!win) return;
+
+  // @ts-ignore
+  let historyStartTime = new Date(Math.min(...(history.map(value => Date.parse(value.timestamp)))));
+  // @ts-ignore
+  let subsStartTime = new Date(Math.min(...(subscription.map(value => Date.parse(value.timestamp)))));
+
+  win.webContents.send('update-start-times', {
+    history: historyStartTime,
+    subs: subsStartTime
+  });
+}
 
 app.on('ready', () => {
   createWindow();
@@ -35,15 +61,20 @@ app.on('window-all-closed', () => {
 
 startServer();
 
-listenForSubs(config.StreamLabsToken);
+listenForSubs(config.streamLabsToken);
 
 ipcMain
-  .on('pause', () => sendPause())
+  .on('pause', sendPause)
+  .on('stop', sendInit)
+  .on('history-reset', resetHistory)
+  .on('history-export', exportHistory)
+  .on('subs-reset', resetSubHistory)
+  .on('subs-export', exportSubHistory)
   .on('config', (_event, newConfig) => {
     for (let par in newConfig) {
       (config as any)[par] = newConfig[par];
     }
-    reloadListener(config.StreamLabsToken);
+    reloadListener(config.streamLabsToken);
     updateConfigOnServer(newConfig);
   });
 

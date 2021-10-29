@@ -1,6 +1,6 @@
 {
   "name": "subathon-timer",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A timer widget for Streamlabs that increases for every subscription you get.",
   "keywords": [
     "subathon",
@@ -23,7 +23,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "start": "npm run build && electron ./dist/main.js",
-    "package": "electron-packager . --overwrite --out=releases --ignore='\\.idea'"
+    "package": "npm run build && electron-packager . --overwrite --out=releases --ignore='\\.idea'"
   },
   "main": "dist/main.js",
   "devDependencies": {
