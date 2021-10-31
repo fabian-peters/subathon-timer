@@ -223,6 +223,9 @@
        */
       const increaseTimer = (additionalTime) => {
         // TODO increase timer if paused? currently yes, if changed to no, make it a setting
+        // do not increase timer if it already hit zero TODO [#15] also if timer not started
+        if (hasReachedZero) return;
+
         let i = Math.floor(Number(additionalTime));
         const interval = setInterval(() => {
           if (i === 0) return clearInterval(interval);
