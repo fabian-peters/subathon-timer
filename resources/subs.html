@@ -79,6 +79,7 @@
   const canvas = document.getElementsByTagName('canvas')[0];
   const ctx = canvas.getContext('2d');
   ctx.lineWidth = 5; // TODO reduce width if timespan greater than x?
+  ctx.lineJoin = 'bevel';
 
   socket.on('config', config => {
     document.querySelector('p').hidden = !config.subHistoryShowTotal; // TODO add offset to config see #8
@@ -148,18 +149,21 @@
     dates.push(Date.now()); // add current timestamp to stretch the graph to current time instead of last sub
     dates = getNormalizedValues(dates);
 
-    console.log('dates: ' + dates);
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // calc offsets so the line is not cut off at the edge
+    const offset = ctx.lineWidth / 2;
+    const width = canvas.width - ctx.lineWidth;
+    const height = canvas.height - ctx.lineWidth;
+
     ctx.beginPath();
-    ctx.moveTo(0, canvas.height);
+    ctx.moveTo(0, height + offset);
     for (let i = 0; i < data.length; i++) { // important: use 'data' not 'dates' as 'dates' contains current time additionally  which isn't a sub
       let subCount = i + 1; // data is 0-indexed so subCount is 1 higher than index
-      ctx.lineTo(canvas.width * dates[i], canvas.height * (1 - (i / data.length))); // i is also equal to the previous subCount
-      ctx.lineTo(canvas.width * dates[i], canvas.height * (1 - (subCount / data.length)));
+      ctx.lineTo(width * dates[i] + offset, height * (1 - (i / data.length)) + offset); // i is also equal to the previous subCount
+      ctx.lineTo(width * dates[i] + offset, height * (1 - (subCount / data.length)) + offset);
     }
-    // TODO line cut off on top? see #9
-    ctx.lineTo(canvas.width, data.length === 0 ? canvas.height : 0); // finish line to current timestamp (end of graph, subCount is either at 0 or max)
+    ctx.lineTo(canvas.width, (data.length === 0 ? height : 0) + offset); // finish line to current timestamp (end of graph, subCount is either at 0 or max)
     ctx.stroke();
   };
 </script>

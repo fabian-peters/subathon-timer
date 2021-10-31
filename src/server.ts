@@ -54,24 +54,24 @@ io.of('/history').on('connection', s => {
   // TODO allows multiple widget? store in array (not for timer!)
   if (socketHistory) socketHistory.emit('error', 'only one history widget allowed');
   socketHistory = s;
-  socketHistory.emit('history-data', history);
   socketHistory.emit('config', config);
+  socketHistory.emit('history-data', history);
 });
 
 io.of('/subs').on('connection', s => {
   // TODO allows multiple widget? store in array (not for timer!)
   if (socketSubs) socketSubs.emit('error', 'only one sub history widget allowed');
   socketSubs = s;
-  socketSubs.emit('subs-data', subscription);
   socketSubs.emit('config', config);
+  socketSubs.emit('subs-data', subscription);
 });
 
 io.of('/timer').on('connection', s => {
   if (socketTimer) socketTimer.emit('error', 'only one timer widget allowed');
   socketTimer = s;
   socketTimer.on('history', saveHistory);
-  socketTimer.emit('init', inTime);
   socketTimer.emit('config', config);
+  socketTimer.emit('init', inTime);
 });
 
 const saveHistory = (historyEntry: History) => {

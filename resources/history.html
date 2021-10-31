@@ -55,7 +55,6 @@
     history = historyData
     drawLine(history);
 
-    console.log('history: ' + history.map(item => Date.parse(item.timestamp)));
     if (history.length === 0) {
       if (intervalIdUpdateTime) { // stop update if history was reset
         stopTask(intervalIdUpdateTime);
@@ -100,7 +99,8 @@
 
   const canvas = document.getElementsByTagName('canvas')[0];
   const ctx = canvas.getContext('2d');
-  ctx.lineWidth = 5; // TODO reduce width if timespan greater than x?
+  ctx.lineWidth = 5; // TODO reduce width if timespan greater than x? add to config?
+  ctx.lineJoin = 'bevel';
 
   socket.on('config', config => {
     document.querySelector('p').hidden = !config.timerHistoryShowTotal;
@@ -166,15 +166,19 @@
     let dates = getNormalizedValues(data.map(value => value.timestamp));
     let times = getNormalizedValues(data.map(value => value.time)).map(time => 1 - time);
 
-    // console.log('dates: ' + dates);
-    // console.log('times: ' + times);
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // calc offsets so the line is not cut off at the edge
+    const offset = ctx.lineWidth / 2;
+    const width = canvas.width - ctx.lineWidth;
+    const height = canvas.height - ctx.lineWidth;
+
     ctx.beginPath();
-    ctx.moveTo(canvas.width * dates[0], canvas.height * times[0]);
-    for (let i = 1; i < data.length; i++) {
-      ctx.lineTo(canvas.width * dates[i], canvas.height * times[i]);
+    ctx.moveTo(0, height * times[0] + offset);
+    for (let i = 0; i < data.length; i++) {
+      ctx.lineTo(width * dates[i] + offset, height * times[i] + offset);
     }
+    ctx.lineTo(canvas.width, height * times[data.length - 1] + offset)
     ctx.stroke();
   };
 </script>
