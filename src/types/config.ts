@@ -11,7 +11,7 @@ export interface Config {
   bgColor: string;
   lineColor: string;
   timerColor: string;
-  streamLabsToken: string;
+  streamLabsTokens: string[];
   timerShadowColor: string;
   webhookEnabled: boolean;
   webhookUrl: string;

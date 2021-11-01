@@ -36,7 +36,8 @@ body {
   flex-direction: column;
 }
 input,
-button {
+button,
+textarea {
   border-radius: 0.5em;
   padding: 0.5em;
   border: none;
@@ -46,6 +47,10 @@ button {
   outline: none;
   width: 250px;
   box-sizing: border-box;
+}
+textarea {
+  resize: vertical;
+  overflow-y: hidden;
 }
 button {
   cursor: pointer;

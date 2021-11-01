@@ -11,7 +11,7 @@ import {
   updateConfigOnServer
 } from './server';
 import config from './types/config';
-import { listenForSubs, reloadListener } from './streamlabs';
+import { reloadListener } from './streamlabs';
 import history from './types/history';
 import subscription from './types/subscription';
 
@@ -61,7 +61,7 @@ app.on('window-all-closed', () => {
 
 startServer();
 
-listenForSubs(config.streamLabsToken);
+reloadListener(config.streamLabsTokens);
 
 ipcMain
   .on('pause', sendPause)
@@ -74,7 +74,7 @@ ipcMain
     for (let par in newConfig) {
       (config as any)[par] = newConfig[par];
     }
-    reloadListener(config.streamLabsToken);
+    reloadListener(config.streamLabsTokens);
     updateConfigOnServer(newConfig);
   });
 

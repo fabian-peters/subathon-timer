@@ -1,5 +1,5 @@
 {
-  "streamLabsToken": "",
+  "streamLabsTokens": [],
   "port": 4040,
   "inTime": 60,
   "addTimeTier1": 60,
