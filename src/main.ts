@@ -30,7 +30,6 @@ const createWindow = async () => {
   });
   win.removeMenu();
   await win.loadFile(path.join(__dirname, '../resources/index.html'));
-  win.webContents.send('config', JSON.parse(JSON.stringify(config)));
   sendStartTimes()
 }
 
@@ -70,6 +69,9 @@ ipcMain
   .on('history-export', exportHistory)
   .on('subs-reset', resetSubHistory)
   .on('subs-export', exportSubHistory)
+  .on('settings', (event) => {
+    event.reply('config', JSON.parse(JSON.stringify(config)));
+  })
   .on('config', (_event, newConfig) => {
     for (let par in newConfig) {
       (config as any)[par] = newConfig[par];

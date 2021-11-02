@@ -31,9 +31,26 @@ body {
   align-items: center;
   gap: 0.5em;
 }
+#settings h1 {
+  margin-bottom: 0;
+}
 #settings div {
   display: flex;
   flex-direction: column;
+}
+#form-controls {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #272727;
+  padding-bottom: 0.5em;
+  align-items: center;
+}
+#form-controls .colorInputContainer {
+  gap: 0.5em;
+}
+#backButton {
+  background: #373737;
 }
 input,
 button,
@@ -54,6 +71,12 @@ textarea {
 }
 button {
   cursor: pointer;
+}
+#settings button:hover {
+  opacity: 0.75;
+}
+#settings button:active {
+  opacity: 0.5;
 }
 .colorInputContainer {
   flex-direction: row !important;

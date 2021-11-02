@@ -7,8 +7,6 @@
   </head>
   <body>
     <form id="settings" style="display: none">
-      <button type="button" id="backButton">Back</button>
-      <hr style='width: 80%'>
       <h1>Settings</h1>
       <h2>General</h2>
       <div>
@@ -109,8 +107,13 @@
         <label for="webhookTriggerInput" title='The time at which the webhook should be triggered.'>Webhook Trigger Time</label>
         <input type="time" step="1" id="webhookTriggerInput" />
       </div>
-      <hr style='width: 80%'>
-      <button type="submit">Submit</button>
+      <div id='form-controls'>
+        <hr style='width: 80%'>
+        <div class='colorInputContainer'>
+          <button type="submit">Submit</button>
+          <button type="button" id="backButton">Cancel</button>
+        </div>
+      </div>
     </form>
     <section id="info">
       <div class="controls">

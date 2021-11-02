@@ -40,6 +40,9 @@
 const changePage = (page: 0 | 1) => {
   (window as any).settings.style.display = ['none', 'flex'][page];
   (window as any).info.style.display = ['unset', 'none'][page];
+  if (page) { // page = 1 is settings page
+    (window as any).bridge.send('settings');
+  }
 };
 
 (window as any).settingsButton.addEventListener('click', () => changePage(1));
