@@ -1,10 +1,13 @@
-const io = require('socket.io-client');
 import { sendSub } from './server';
+import type { Socket } from 'socket.io';
 
-let socket: any;
+const io = require('socket.io-client');
 
-export const listenForSubs = (token: string) => {
-  socket = io(`https://sockets.streamlabs.com?token=${token}`, { transports: ['websocket'] });
+let sockets: Socket[] = [];
+
+const listenForSubs = (token: string) => {
+  let socket = io(`https://sockets.streamlabs.com?token=${token}`, { transports: ['websocket'] });
+  sockets.push(socket);
   socket.on('event', (event: any) => {
     if (event.for && event.for === 'twitch_account' && (event.type === 'subscription' || event.type === 'resub')) {
       for (const sub of event.message) {
@@ -18,7 +21,14 @@ export const listenForSubs = (token: string) => {
   });
 };
 
-export const reloadListener = (token: string): void => {
-  if (socket) (socket as any).disconnect();
-  listenForSubs(token);
+export const reloadListener = (tokens: string[]): void => {
+  // first, disconnect ALL sockets
+  for (const socket of sockets) {
+    if (socket) socket.disconnect();
+  }
+
+  // then open new sockets only for the tokens that were provided (may be more or less then previously)
+  for (const token of tokens) {
+    listenForSubs(token);
+  }
 };

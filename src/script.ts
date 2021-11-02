@@ -1,6 +1,6 @@
 (window as any).bridge.on('config', (config: any) => {
   (window as any).running.innerText = `Widget is running on http://localhost:${config.port}`;
-  (window as any).streamLabsTokenInput.value = config.streamLabsToken;
+  (window as any).streamLabsTokenInput.value = config.streamLabsTokens;
   (window as any).addTimeTier1Input.value = config.addTimeTier1;
   (window as any).addTimeTier2Input.value = config.addTimeTier2;
   (window as any).addTimeTier3Input.value = config.addTimeTier3;
@@ -50,7 +50,11 @@ const changePage = (page: 0 | 1) => {
   e.preventDefault();
   (window as any).running.innerText = `Widget is running on http://localhost:${Number((window as any).portInput.value)}`;
   (window as any).bridge.send('config', {
-    streamLabsToken: (window as any).streamLabsTokenInput.value,
+    streamLabsTokens: (window as any).streamLabsTokenInput.value
+      .split(',')
+      .map((token: string) => token.trim())
+      .filter((token: string) => token) // filter out empty
+      .filter((token: string, index: number, array: string[]) => array.indexOf(token) === index), // unique values (otherwise same token would lead to time added multiple times per sub)
     port: Number((window as any).portInput.value),
     addTimeTier1: (window as any).addTimeTier1Input.valueAsNumber,
     addTimeTier2: (window as any).addTimeTier2Input.valueAsNumber,
