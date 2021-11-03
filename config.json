@@ -19,5 +19,7 @@
   "timerHistoryShowTotal": true,
   "subHistoryEnabled": true,
   "subHistoryShowTotal": true,
-  "subHistoryRefresh": 20
+  "subHistoryRefresh": 20,
+  "addTimeBeforeStart": false,
+  "addTimePaused": true
 }

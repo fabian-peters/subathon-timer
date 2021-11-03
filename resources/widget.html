@@ -47,10 +47,13 @@
     <script>
       // TODO move script to src/scripts or resources/scripts? typescript?
       // TODO rename to timer.html
+      // TODO store config instead of individual values?
       // timer
       let time = 0;
       let paused = true;
       let hasReachedZero = false;
+      let addTimeBeforeStart = false;
+      let addTimePaused = true;
 
       // background tasks
       let intervalIdDrawLine;
@@ -97,6 +100,10 @@
         if (paused && !hasReachedZero && !intervalIdCountDown && !intervalIdDrawLine) { // tasks are always running except when the timer hasn't been started or it reached zero, so check for that too
           setTime(Math.floor(Number(config.inTime) * 60));
         }
+
+        // update timer increase settings
+        addTimeBeforeStart = config.addTimeBeforeStart;
+        addTimePaused = config.addTimePaused;
 
         // update colors
         document.querySelector('div').style.background = config.bgColor;
@@ -222,9 +229,12 @@
        * @param additionalTime the additional time to add to the timer (in seconds)
        */
       const increaseTimer = (additionalTime) => {
-        // TODO increase timer if paused? currently yes, if changed to no, make it a setting
-        // do not increase timer if it already hit zero TODO [#15] also if timer not started
-        if (hasReachedZero) return;
+        // do not increase timer if it already hit zero or disabled in settings TODO [#20] also if timer cap is hit
+        if (hasReachedZero ||
+          (!addTimeBeforeStart && (paused && !intervalIdCountDown && !intervalIdDrawLine)) || // initial start?
+          (!addTimePaused && (paused && intervalIdCountDown && intervalIdDrawLine))){ // paused but started?
+          return;
+        }
 
         let i = Math.floor(Number(additionalTime));
         const interval = setInterval(() => {

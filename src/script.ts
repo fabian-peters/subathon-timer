@@ -4,6 +4,8 @@
   (window as any).addTimeTier1Input.value = config.addTimeTier1;
   (window as any).addTimeTier2Input.value = config.addTimeTier2;
   (window as any).addTimeTier3Input.value = config.addTimeTier3;
+  (window as any).addTimeBeforeStartInput.checked = config.addTimeBeforeStart;
+  (window as any).addTimePausedInput.checked = config.addTimePaused;
   (window as any).portInput.value = config.port;
   (window as any).inTimeInput.value = config.inTime;
   (window as any).timespanInput.value = config.timespan;
@@ -62,6 +64,8 @@ const changePage = (page: 0 | 1) => {
     addTimeTier1: (window as any).addTimeTier1Input.valueAsNumber,
     addTimeTier2: (window as any).addTimeTier2Input.valueAsNumber,
     addTimeTier3: (window as any).addTimeTier3Input.valueAsNumber,
+    addTimeBeforeStart: (window as any).addTimeBeforeStartInput.checked,
+    addTimePaused: (window as any).addTimePausedInput.checked,
     inTime: (window as any).inTimeInput.valueAsNumber,
     timespan: (window as any).timespanInput.valueAsNumber,
     refreshInterval: (window as any).refreshIntervalInput.valueAsNumber,

@@ -6,6 +6,8 @@ export interface Config {
   addTimeTier1: number;
   addTimeTier2: number;
   addTimeTier3: number;
+  addTimeBeforeStart: boolean;
+  addTimePaused: boolean;
   timespan: number;
   refreshInterval: number;
   bgColor: string;
