@@ -16,7 +16,6 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-let inTime = config.inTime;
 let addTimeTier1 = config.addTimeTier1;
 let addTimeTier2 = config.addTimeTier2;
 let addTimeTier3 = config.addTimeTier3;
@@ -71,7 +70,7 @@ io.of('/timer').on('connection', s => {
   socketTimer = s;
   socketTimer.on('history', saveHistory);
   socketTimer.emit('config', config);
-  socketTimer.emit('init', inTime);
+  socketTimer.emit('init', config.inTime);
 });
 
 const saveHistory = (historyEntry: History) => {
@@ -161,7 +160,6 @@ export const updateConfigOnServer = (newConfig: Config) => {
   addTimeTier1 = newConfig.addTimeTier1;
   addTimeTier2 = newConfig.addTimeTier2;
   addTimeTier3 = newConfig.addTimeTier3;
-  inTime = newConfig.inTime;
 
   socketTimer && socketTimer.emit('config', newConfig);
   socketHistory && socketHistory.emit('config', newConfig);
@@ -170,7 +168,7 @@ export const updateConfigOnServer = (newConfig: Config) => {
 
 export const sendPause = () => socketTimer && socketTimer.emit('pause');
 
-export const sendInit = () => socketTimer && socketTimer.emit('init', inTime);
+export const sendInit = (inTime: number = config.inTime) => socketTimer && socketTimer.emit('init', inTime);
 
 export const sendSub = (sub: Subscription) => {
   // TODO [#15] disable before timer was initially started

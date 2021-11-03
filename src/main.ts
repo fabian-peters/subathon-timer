@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import * as path from 'path';
 import {
   exportHistory,
@@ -30,8 +30,35 @@ const createWindow = async () => {
   });
   win.removeMenu();
   await win.loadFile(path.join(__dirname, '../resources/index.html'));
-  sendStartTimes()
+  sendStartTimes();
+
+  // continue timer from history?
+  let lastSavedTime = history.map(item => {
+    // @ts-ignore
+    const timestamp = Date.parse(item.timestamp); // parse date to a number
+    return { ...item, timestamp };
+  }).sort((a, b) => b.timestamp - a.timestamp)[0];
+  if (lastSavedTime) {
+    const response = dialog.showMessageBoxSync(win, {
+      type: 'question',
+      buttons: ['Yes', 'No'],
+      defaultId: 1,
+      title: 'Continue from history?',
+      message: 'Do you want to continue the timer from the stored history?',
+      detail: `Last time saved in history: ${convertToTimeString(lastSavedTime.time)} on ${new Date(lastSavedTime.timestamp).toLocaleString()}`
+    });
+    if (response === 0) {
+      sendInit(lastSavedTime.time / 60); // TODO what if widget is not running yet?
+    }
+  }
 }
+
+const convertToTimeString = (time: number) => {
+  const hours = Math.floor(time / 3600),
+    minutes = Math.floor((time % 3600) / 60),
+    seconds = time % 60;
+  return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+};
 
 export const sendStartTimes = () => {
   if (!win) return;
@@ -64,7 +91,7 @@ reloadListener(config.streamLabsTokens);
 
 ipcMain
   .on('pause', sendPause)
-  .on('stop', sendInit)
+  .on('stop', () => sendInit())
   .on('history-reset', resetHistory)
   .on('history-export', exportHistory)
   .on('subs-reset', resetSubHistory)
