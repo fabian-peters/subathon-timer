@@ -52,6 +52,9 @@ body {
 #backButton {
   background: #373737;
 }
+#bottom-spacer {
+  padding-bottom: 50px;
+}
 input,
 button,
 textarea {
