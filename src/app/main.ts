@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import {app, BrowserWindow, dialog, ipcMain} from 'electron';
 import * as path from 'path';
 import {
   exportHistory,
@@ -10,10 +10,10 @@ import {
   startServer,
   updateConfigOnServer
 } from './server';
-import config from './types/config';
-import { reloadListener } from './streamlabs';
-import history from './types/history';
-import subscription from './types/subscription';
+import config from '../types/config';
+import {reloadListener} from './streamlabs';
+import history from '../types/history';
+import subscription from '../types/subscription';
 
 let win: BrowserWindow | undefined;
 
@@ -29,7 +29,7 @@ const createWindow = async () => {
     width: 400
   });
   win.removeMenu();
-  await win.loadFile(path.join(__dirname, '../resources/index.html'));
+  await win.loadFile(path.join(__dirname, '../../index.html'));
   sendStartTimes();
 
   // continue timer from history?

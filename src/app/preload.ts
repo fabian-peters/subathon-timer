@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import {contextBridge, ipcRenderer} from 'electron';
 
 contextBridge.exposeInMainWorld('bridge', {
   send: (channel: string, data: string) => ['config', 'pause', 'stop', 'history-reset', 'history-export', 'subs-reset', 'subs-export', 'settings'].includes(channel) && ipcRenderer.send(channel, data),

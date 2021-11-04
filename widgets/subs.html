@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Subathon Timer History</title>
+  <title>Subathon Sub History</title>
   <style>
       body {
           font-family: sans-serif;
@@ -40,33 +40,25 @@
   <script src="./socket.io.js"></script>
 </head>
 <body>
-  <nobr><p style="text-shadow: 0 0 10px transparent; color: transparent">0:00</p></nobr>
+  <nobr><p style="text-shadow: 0 0 10px transparent; color: transparent">0</p></nobr>
 <div style="background: transparent">
   <canvas></canvas>
 </div>
 <script>
   // TODO move script to src/scripts or resources/scripts? typescript?
-  // TODO clean up code, add comments (like widget.html)
-  let history = [];
-  let intervalIdUpdateTime;
+  // TODO clean up code, add comments (like timer.html)
+  // TODO reduce code duplication with timer history if possible
+  let subs = [];
+  let intervalIdDrawLine;
 
-  const socket = io("/history");
-  socket.on('history-data', historyData => {
-    history = historyData
-    drawLine(history);
-
-    if (history.length === 0) {
-      if (intervalIdUpdateTime) { // stop update if history was reset
-        stopTask(intervalIdUpdateTime);
-      }
-      setTime(0);
-    } else {
-      let startTime = Math.floor(Math.min.apply(Math, history.map(item => Date.parse(item.timestamp))) / 1000);
-      updateTime(startTime);
-      intervalIdUpdateTime = startTask(intervalIdUpdateTime, () => updateTime(startTime), 1);
-    }
+  const socket = io("/subs");
+  socket.on('subs-data', subsData => {
+    subs = subsData
+    setSubCount(subs.length);
+    drawLine(subs);
+    // console.log('subs: ' + subs.map(item => Date.parse(item.timestamp)));
   });
-  socket.on('history-export', (bgColor, callback) => {
+  socket.on('subs-export', (bgColor, callback) => {
     const globalCompositeOperation = ctx.globalCompositeOperation;
     ctx.globalCompositeOperation = 'destination-over';
     ctx.fillStyle = bgColor;
@@ -78,38 +70,27 @@
     document.querySelector('div').innerText = msg;
   });
 
-  const updateTime = (startTime) => {
-    let currentTime = Math.floor(Date.now() / 1000);
-    let timeSinceStart = currentTime - startTime;
-    if (Number.isInteger(timeSinceStart)) {
-      setTime(timeSinceStart);
-    }
-  }
+  const setSubCount = (count) => {
+    document.querySelector('p').innerText = `${count}`;
 
-  const setTime = time => {
-    const days = Math.floor(time / 86400),
-      hours = Math.floor((time % 86400) / 3600),
-      minutes = Math.floor((time % 3600) / 60),
-      seconds = time % 60;
-    // console.log(days + 'd ' + hours + 'h ' + minutes + 'min ' + seconds + 's')
-    document.querySelector('p').innerText = `${days ? `${days}d ` : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
-
-    // TODO add webhooks for total time? see #14
+    // TODO add webhooks for sub count? see #14
   };
 
   const canvas = document.getElementsByTagName('canvas')[0];
   const ctx = canvas.getContext('2d');
-  ctx.lineWidth = 5; // TODO reduce width if timespan greater than x? add to config?
+  ctx.lineWidth = 5; // TODO reduce width if timespan greater than x?
   ctx.lineJoin = 'bevel';
 
   socket.on('config', config => {
-    document.querySelector('p').hidden = !config.timerHistoryShowTotal;
+    document.querySelector('p').hidden = !config.subHistoryShowTotal; // TODO add offset to config see #8
 
     document.querySelector('div').style.background = config.bgColor;
     document.querySelector('p').style.color = config.timerColor;
     document.querySelector('p').style.textShadow = `0px 0px 10px ${config.timerShadowColor}`;
     ctx.strokeStyle = config.lineColor;
-    drawLine(history);
+
+    drawLine(subs);
+    intervalIdDrawLine = startTask(intervalIdDrawLine, () => drawLine(subs), config.subHistoryRefresh);
   });
 
   /**
@@ -155,16 +136,18 @@
 
   const drawLine = (data) => {
     // TODO add possibility to limit the timespan of the graph
+    let now = Date.now();
     data = data
       .map(item => {
         const timestamp = Date.parse(item.timestamp); // parse date to a number
         return { ...item, timestamp };
       })
-      .filter(item => Number.isInteger(item.timestamp) && Number.isInteger(item.time)) // remove invalid data points
+      .filter(item => Number.isInteger(item.timestamp)) // remove invalid data points
       .sort((a, b) => a.timestamp - b.timestamp); // sort by timestamp in case json file is weird
 
-    let dates = getNormalizedValues(data.map(value => value.timestamp));
-    let times = getNormalizedValues(data.map(value => value.time)).map(time => 1 - time);
+    let dates = data.map(value => value.timestamp);
+    dates.push(Date.now()); // add current timestamp to stretch the graph to current time instead of last sub
+    dates = getNormalizedValues(dates);
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -174,11 +157,13 @@
     const height = canvas.height - ctx.lineWidth;
 
     ctx.beginPath();
-    ctx.moveTo(0, height * times[0] + offset);
-    for (let i = 0; i < data.length; i++) {
-      ctx.lineTo(width * dates[i] + offset, height * times[i] + offset);
+    ctx.moveTo(0, height + offset);
+    for (let i = 0; i < data.length; i++) { // important: use 'data' not 'dates' as 'dates' contains current time additionally  which isn't a sub
+      let subCount = i + 1; // data is 0-indexed so subCount is 1 higher than index
+      ctx.lineTo(width * dates[i] + offset, height * (1 - (i / data.length)) + offset); // i is also equal to the previous subCount
+      ctx.lineTo(width * dates[i] + offset, height * (1 - (subCount / data.length)) + offset);
     }
-    ctx.lineTo(canvas.width, height * times[data.length - 1] + offset)
+    ctx.lineTo(canvas.width, (data.length === 0 ? height : 0) + offset); // finish line to current timestamp (end of graph, subCount is either at 0 or max)
     ctx.stroke();
   };
 </script>
