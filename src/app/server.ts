@@ -1,16 +1,16 @@
 import * as express from 'express';
-import type {Socket} from 'socket.io';
-import {Server} from 'socket.io';
+import type { Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import * as http from 'http';
 import * as path from 'path';
-import type {Config} from '../types/config';
+import type { Config } from '../types/config';
 import config from '../types/config';
-import type {History} from '../types/history';
+import type { History } from '../types/history';
 import history from '../types/history';
-import {dialog} from 'electron';
+import { dialog } from 'electron';
 import * as fs from 'fs';
-import subscription, {Subscription} from '../types/subscription';
-import {sendStartTimes} from './main';
+import subscription, { Subscription } from '../types/subscription';
+import { sendStartTimes } from './main';
 
 const app = express();
 const server = http.createServer(app);
@@ -40,10 +40,11 @@ export const startServer = () => {
   }
 }
 
-app.get('/', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widgets/timer.html')));
-app.get('/history', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widgets/history.html')));
-app.get('/subs', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widgets/subs.html')));
-app.get('/socket.io.js', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'node_modules', 'socket.io', 'client-dist', 'socket.io.min.js'))); // TODO reference directly so IDE can pick it up
+app.get('/', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widgets', 'timer.html')));
+app.get('/history', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widgets', 'history.html')));
+app.get('/subs', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widgets', 'subs.html')));
+app.get('/widgets.css', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widgets', 'widgets.css')));
+app.get('/socket.io.js', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'node_modules', 'socket.io', 'client-dist', 'socket.io.min.js')));
 
 let socketTimer: Socket | undefined;
 let socketHistory: Socket | undefined;
