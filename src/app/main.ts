@@ -32,7 +32,7 @@ const createMainWindow = () => {
     show: false,
     webPreferences: webPreferences
   });
-  mainWindow.loadFile(path.join(__dirname, '../../index.html'));
+  mainWindow.loadFile(path.join(__dirname, '../../ui/index.html'));
   mainWindow.removeMenu();
 
   mainWindow.once('ready-to-show', () => {
@@ -105,7 +105,7 @@ const createSettingsWindow = () => {
     show: false,
     webPreferences: webPreferences
   });
-  settingsWindow.loadFile(path.join(__dirname, '../../settings.html'));
+  settingsWindow.loadFile(path.join(__dirname, '../../ui/settings.html'));
   settingsWindow.removeMenu();
 
   settingsWindow.once('ready-to-show', () => {
