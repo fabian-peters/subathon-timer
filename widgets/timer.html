@@ -9,33 +9,17 @@
   <body>
     <p style="text-shadow: 0 0 10px transparent; color: transparent">0:00</p>
     <div style="background: transparent">
+      <span></span>
       <canvas></canvas>
     </div>
     <script>
       // TODO move script to src/scripts or resources/scripts? typescript?
       // TODO store config instead of individual values?
-      // timer
-      let time = 0;
-      let paused = true;
-      let hasReachedZero = false;
-      let addTimeBeforeStart = false;
-      let addTimePaused = true;
-
       // background tasks
       let intervalIdDrawLine;
-      let intervalIdCountDown;
-      let intervalIdSendTimerHistory;
-
-      // webhook
-      let webhookUrl = "";
-      let webhookTrigger = 0;
-      let webhookEnabled = false;
-
-      // timer history
-      let timerHistoryEnabled = false;
-      let timerHistoryInterval = 60;
 
       // graph
+      let time = 0;
       let timespan = 0;
       let refreshInterval = 10;
       let timeHistory = []; // TODO rename to avoid confusion if history widget
@@ -46,31 +30,46 @@
 
       // register events
       const socket = io("/timer");
-      socket.on('init', initialTime => initTimer(initialTime));
-      socket.on('pause', () => togglePause()); // pause is also used to start the timer because it is the same UI button
-      socket.on('sub', additionalTime => increaseTimer(additionalTime));
+      socket.on('connect', () => {
+        console.log('Connected to timer.');
+        document.querySelector('span').innerText = "";
+      });
+      socket.on('disconnect', () => {
+        console.log("Connection to timer lost.")
+        document.querySelector('span').innerText = "Not connected to timer";
+        document.querySelector('p').innerText = "";
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      });
       socket.on('error', msg => {
-        document.querySelector('div').innerText = msg;
-        paused = true;
+        document.querySelector('span').innerText = msg;
       });
       socket.on('config', newConfig => updateConfig(newConfig));
+      socket.on('widget-data', data => {
+        setTime(data.currentTime, data.currentTimeString);
+
+        if (data.timerState === 'not-started') { // reset / init
+          console.log('Reset or init received. Resetting graph...');
+          // stop task
+          intervalIdDrawLine = stopTask(intervalIdDrawLine);
+
+          // reset graph
+          timeHistory = [];
+          drawLine(); // draw empty once to reset the graph
+          timeHistory = new Array(timespan / refreshInterval);
+        } else if (!intervalIdDrawLine) { // initial start of timer
+          console.log('Initial start received. Starting graph...');
+          drawLine(); // immediately start the graph (might make it look a bit weird because the spacing might be ~1s off, but that should be fine)
+          intervalIdDrawLine = startTask(intervalIdDrawLine, drawLine, refreshInterval);
+        }
+      });
 
       /**
        * Update the configuration based on the provided config.
-       * If a refresh interval changes (graph or history), the respective task will be restarted with the new interval.
+       * If the graph refresh interval changes, the respective task will be restarted with the new interval.
        *
        * @param config the config containing the new values that should be used
        */
-      const updateConfig = (config) => {
-        // update timer if it wasn't started yet
-        if (paused && !hasReachedZero && !intervalIdCountDown && !intervalIdDrawLine) { // tasks are always running except when the timer hasn't been started or it reached zero, so check for that too
-          setTime(Math.floor(Number(config.inTime) * 60));
-        }
-
-        // update timer increase settings
-        addTimeBeforeStart = config.addTimeBeforeStart;
-        addTimePaused = config.addTimePaused;
-
+      const updateConfig = (config) => { // TODO remove token before sending?
         // update colors
         document.querySelector('div').style.background = config.bgColor;
         document.querySelector('p').style.color = config.timerColor;
@@ -82,13 +81,12 @@
         timespan = config.timespan;
         if (refreshInterval === config.refreshInterval && oldSize === timeHistory.length) { // only resize if the array was initialized
           // interval is the same so we can copy the history
-          // console.log("Resizing the history array.")
-          // console.log("old history: " + timeHistory)
+          console.log("Resizing the history array.")
+          console.log("old history: " + timeHistory)
           const newSize = timespan / refreshInterval;
-          // console.log("newSize: " + newSize)
           while (timeHistory.length > newSize) { timeHistory.shift() } // while bigger, delete oldest values
           while (timeHistory.length < newSize) { timeHistory.unshift("") } // while smaller, add to the front (so there is no break)
-          // console.log("new history: " + timeHistory)
+          console.log("new history: " + timeHistory)
         } else {
           // we need to update the interval and re-initialize the history
           console.log("Resetting the history because refresh interval changed.")
@@ -99,65 +97,6 @@
           if (intervalIdDrawLine) { // only update interval, do not start if it isn't running
             intervalIdDrawLine = startTask(intervalIdDrawLine, drawLine, refreshInterval);
           }
-        }
-
-        // update webhook config
-        webhookEnabled = config.webhookEnabled;
-        webhookUrl = config.webhookUrl;
-        webhookTrigger = config.webhookTrigger / 1000; // stored in config in ms but we use seconds for the time
-
-        // update timer history config
-        timerHistoryEnabled = config.timerHistoryEnabled;
-        timerHistoryInterval = config.timerHistoryInterval;
-        if (intervalIdDrawLine) { // only update interval, do not start if it isn't running
-          if (timerHistoryEnabled) {
-            intervalIdSendTimerHistory = startTask(intervalIdSendTimerHistory, sendTimerHistory, timerHistoryInterval);
-          } else { // history is disabled but there is still an interval active
-            clearInterval(intervalIdSendTimerHistory);
-            intervalIdSendTimerHistory = null;
-          }
-        }
-      }
-
-      /**
-       * Initialize/reset the timer (without starting it).
-       * This also stops any running background task like countdown or drawing the graph.
-       *
-       * @param initialTime the initial time of the timer
-       */
-      const initTimer = (initialTime) => {
-        // make sure background tasks are not running
-        intervalIdCountDown = stopTask(intervalIdCountDown);
-        intervalIdDrawLine = stopTask(intervalIdDrawLine);
-        intervalIdSendTimerHistory = stopTask(intervalIdSendTimerHistory);
-
-        // pause, reset time and default values
-        paused = true;
-        hasReachedZero = false;
-        setTime(Math.floor(Number(initialTime) * 60));
-
-        // reset graph
-        timeHistory = [];
-        drawLine(); // draw empty once to reset the graph
-        timeHistory = new Array(timespan / refreshInterval);
-      };
-
-      /**
-       * Toggle paused state.
-       * If this is the initial start of the timer, start background tasks.
-       */
-      const togglePause = () => {
-        if (!hasReachedZero) {
-          if (!intervalIdCountDown && !intervalIdDrawLine) { // is initial start?
-            console.log('Starting timer!');
-            sendTimerHistory(); // update history to include the initial start
-            intervalIdSendTimerHistory = startTask(intervalIdSendTimerHistory, sendTimerHistory, timerHistoryInterval);
-            intervalIdCountDown = startTask(intervalIdCountDown, countDown, 1);
-            drawLine(); // immediately start the graph (might make it look a bit weird because the spacing might be ~1s off, but that should be fine)
-            intervalIdDrawLine = startTask(intervalIdDrawLine, drawLine, refreshInterval);
-          }
-
-          paused = !paused;
         }
       }
 
@@ -189,90 +128,15 @@
       };
 
       /**
-       * Increase the timer by the given amount.
-       * The change is applied gradually (+1 every 25ms).
-       *
-       * @param additionalTime the additional time to add to the timer (in seconds)
-       */
-      const increaseTimer = (additionalTime) => {
-        // do not increase timer if it already hit zero or disabled in settings TODO [#20] also if timer cap is hit
-        if (hasReachedZero ||
-          (!addTimeBeforeStart && (paused && !intervalIdCountDown && !intervalIdDrawLine)) || // initial start?
-          (!addTimePaused && (paused && intervalIdCountDown && intervalIdDrawLine))){ // paused but started?
-          return;
-        }
-
-        let i = Math.floor(Number(additionalTime));
-        const interval = setInterval(() => {
-          if (i === 0) return clearInterval(interval);
-          setTime(time + 1);
-          i -= 1;
-        }, 25);
-      };
-
-      /**
        * Update the internal time and the displayed time to the given time.
-       * Also check whether to trigger the webhook.
        *
        * @param newTime the time after update
+       * @param timeAsString the timer after update formatted to be displayed
        */
-      const setTime = newTime => {
-        time = newTime;
-        const hours = Math.floor(time / 3600),
-          minutes = Math.floor((time % 3600) / 60),
-          seconds = time % 60;
-        document.querySelector('p').innerText = `${hours ? `${hours}:${minutes < 10 ? '0' : ''}` : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-        handleWebhooks();
+      const setTime = (newTime, timeAsString) => {
+        time = newTime; // still needed for the graph even though timer is now running in app
+        document.querySelector('p').innerText = timeAsString;
       };
-
-      /**
-       * Trigger the webhook if the current time matches the configured trigger and webhooks are enabled.
-       */
-      const handleWebhooks = () => {
-        if (webhookEnabled && time === webhookTrigger) {
-          const Http = new XMLHttpRequest();
-          Http.open("POST", webhookUrl);
-          Http.send();
-
-          console.log('Triggered webhook!');
-
-          Http.onreadystatechange = () => {
-            console.log(Http.responseText); // TODO not working (in browser) because of CORS
-          };
-        }
-      };
-
-      /**
-       * Count down the timer and check if it hit 0.
-       * Do not count down if the timer is paused or already hit zero.
-       */
-      const countDown = () => {
-        if (paused || hasReachedZero) return;
-
-        setTime(time - 1);
-        if (time === 0) {
-          // stop background tasks
-          intervalIdCountDown = stopTask(intervalIdCountDown);
-          intervalIdDrawLine = stopTask(intervalIdDrawLine);
-          intervalIdSendTimerHistory = stopTask(intervalIdSendTimerHistory);
-
-          sendTimerHistory(); // update history to include the 0
-          hasReachedZero = true;
-        }
-      };
-
-      /**
-       * Send the current time with timestamp back to the server.
-       * Note: This also happens while the timer is paused.
-       */
-      const sendTimerHistory = () => {
-        if (!timerHistoryEnabled || hasReachedZero) return;
-
-        socket.emit('history', {
-          timestamp: new Date(),
-          time: time
-        })
-      }
 
       /**
        * Draw the line graph of the recent history.
@@ -282,16 +146,13 @@
         timeHistory.shift();
         timeHistory.push(time);
 
+        let points = timeHistory.filter(time => Number.isInteger(time) && time >= 0);
+
         // scale graph to fit
-        let min = Math.min.apply(Math, timeHistory.filter(value => value > 0));
-        let max = Math.max.apply(Math, timeHistory.filter(value => value > 0));
-        let points = [];
-        for (let time of timeHistory) {
-          if (Number.isInteger(time) && time > 0) {
-            let range = Math.max(max - min, 2 * timespan); // range = timespan would mean pretty steep curve even though nothing really happened so use at least twice the time span as vertical range
-            points.push(1 - ((time - min) / range));
-          }
-        }
+        let min = Math.min.apply(Math, points);
+        let max = Math.max.apply(Math, points);
+        let range = Math.max(max - min, 2 * timespan); // range = timespan would mean pretty steep curve even though nothing really happened so use at least twice the time span as vertical range
+        points = points.map(time => 1 - ((time - min) / range))
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
