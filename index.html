@@ -1,129 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang='en'>
   <head>
     <meta charset="UTF-8" />
-    <title>Subathon timer controls</title>
+    <title>Subathon Timer Controls</title>
     <link rel="stylesheet" href='style.css' />
   </head>
   <body>
-    <form id="settings" style="display: none">
-      <h1>Settings</h1>
-      <h2>General</h2>
-      <div>
-        <label for="streamLabsTokenInput" title="One or more Socket API tokens (comma-separated) to receive subscription info.">Streamlabs Tokens</label>
-        <textarea id="streamLabsTokenInput"></textarea>
-      </div>
-      <div>
-        <label for="portInput" title="The port on which to listen for connections.">Port</label>
-        <input type="text" accept="[0-9]+" id="portInput" />
-      </div>
-      <h2>Timer Widget</h2>
-      <div>
-        <label for="inTimeInput" title='The initial time at which the timer starts.'>Initial Time (minutes)</label>
-        <input type="number" id="inTimeInput" />
-      </div>
-      <hr style='width: 35%'>
-      <div>
-        <label for="addTimeTier1Input" title='The additional time that gets added to the timer for a Tier 1 or Prime subscription.'>Additional Time Tier 1 (seconds)</label>
-        <input type="number" id="addTimeTier1Input" />
-      </div>
-      <div>
-        <label for="addTimeTier2Input" title='The additional time that gets added to the timer for a Tier 2 subscription.'>Additional Time Tier 2 (seconds)</label>
-        <input type="number" id="addTimeTier2Input" />
-      </div>
-      <div>
-        <label for="addTimeTier3Input" title='The additional time that gets added to the timer for a Tier 3 subscription.'>Additional Time Tier 3 (seconds)</label>
-        <input type="number" id="addTimeTier3Input" />
-      </div>
-      <div class="colorInputContainer">
-        <label for="addTimeBeforeStartInput" title='New subs increase the time even before the timer was started. Note: Saving settings before the timer is started still resets the time!'>Increase Time Before Start</label>
-        <input type="checkbox" id="addTimeBeforeStartInput" />
-      </div>
-      <div class="colorInputContainer">
-        <label for="addTimePausedInput" title='New subs increase the time while the timer is paused.'>Increase Time While Paused</label>
-        <input type="checkbox" id="addTimePausedInput" />
-      </div>
-      <hr style='width: 35%'>
-      <div>
-        <label for="timespanInput" title='The timespan how far back the graph shows the time, e.g. 120 means the graph shows the time in the past 2 minutes.'>Graph Timespan (seconds)</label>
-        <input type="number" id="timespanInput" />
-      </div>
-      <div>
-        <label for="refreshIntervalInput" title='How often the graph gets refreshed, e.g. 10 means the graph is refreshed every 10s.'>Graph Refresh (seconds)</label>
-        <input type="number" id="refreshIntervalInput" />
-      </div>
-      <hr style='width: 35%'>
-      <div class="colorInputContainer">
-        <label for="timerHistoryEnabledInput" title='Determines whether the timer history will be saved to the history.json file.'>Save Timer History</label>
-        <input type="checkbox" id="timerHistoryEnabledInput" />
-      </div>
-      <div>
-        <label for="timerHistoryIntervalInput" title='How often the current time is saved to the history.json file, e.g. 60 means the file is updated once every minute.'>Timer History Interval (seconds)</label>
-        <input type="number" id="timerHistoryIntervalInput" />
-      </div>
-      <div class="colorInputContainer">
-        <label for="subHistoryEnabledInput" title='Determines whether the subscription history will be saved to the subs.json file.'>Save Sub History</label>
-        <input type="checkbox" id="subHistoryEnabledInput" />
-      </div>
-      <h2>Timer History Widget</h2>
-      <div class="colorInputContainer">
-        <label for="timerHistoryShowTotalInput" title='Show or hide the total time in the history widget.'>Show Total Time</label>
-        <input type="checkbox" id="timerHistoryShowTotalInput" />
-      </div>
-      <hr style='width: 35%'>
-      <button type="button" id="timerHistoryResetButton" title='Delete the currently stored timer history. You will lose all data in the history.json file.'>Reset Timer History</button>
-      <button type="button" id="timerHistoryExportButton" title='Export the current timer history graph as PNG.'>Export Timer History Graph</button>
-      <h2>Sub History Widget</h2>
-      <div class="colorInputContainer">
-        <label for="subHistoryShowTotalInput" title='Show or hide the total number of new subscriptions in the subs widget.'>Show Total Sub Count</label>
-        <input type="checkbox" id="subHistoryShowTotalInput" />
-      </div>
-      <div>
-        <label for="subHistoryRefreshInput" title='How often the graph gets refreshed, e.g. 10 means the graph is refreshed every 10s. It is automatically updated when a new sub comes in.'>Sub History Refresh (seconds)</label>
-        <input type="number" id="subHistoryRefreshInput" />
-      </div>
-      <hr style='width: 35%'>
-      <button type="button" id="subHistoryResetButton" title='Delete the currently stored subscription history. You will lose all data in the subs.json file.'>Reset Sub History</button>
-      <button type="button" id="subHistoryExportButton" title='Export the current subscription history graph as PNG.'>Export Sub History Graph</button>
-      <h2>Colors (All Widgets)</h2>
-      <div class="colorInputContainer">
-        <label for="bgColorInput" title='The color of the background.'>Background Color</label>
-        <input type="color" id="bgColorInput" />
-      </div>
-      <div class="colorInputContainer">
-        <label for="lineColorInput" title='The color of the line graph.'>Line Color</label>
-        <input type="color" id="lineColorInput" />
-      </div>
-      <div class="colorInputContainer">
-        <label for="timerColorInput" title='The color of the timer/sub count.'>Timer Color</label>
-        <input type="color" id="timerColorInput" />
-      </div>
-      <div class="colorInputContainer">
-        <label for="timerShadowColorInput" title='The color of the shadow/glow of the timer/sub count. Use the same color as the background to disable.'>Timer Shadow Color</label>
-        <input type="color" id="timerShadowColorInput" />
-      </div>
-      <h2>Webhooks</h2>
-      <div class="colorInputContainer">
-        <label for="webhookEnabledInput" title='Enable or disable triggering the configured webhook.'>Enable Timer Webhook</label>
-        <input type="checkbox" id="webhookEnabledInput" />
-      </div>
-      <div>
-        <label for="webhookUrlInput" title='The URL of the webhook to call.'>Webhook URL</label>
-        <input type="text" id="webhookUrlInput" />
-      </div>
-      <div>
-        <label for="webhookTriggerInput" title='The time at which the webhook should be triggered.'>Webhook Trigger Time</label>
-        <input type="time" step="1" id="webhookTriggerInput" />
-      </div>
-      <span id='bottom-spacer'></span>
-      <div id='form-controls'>
-        <hr style='width: 80%'>
-        <div class='colorInputContainer'>
-          <button type="submit">Submit</button>
-          <button type="button" id="backButton">Cancel</button>
-        </div>
-      </div>
-    </form>
     <section id="info">
       <div class="controls">
         <div title='Start / Pause'>
@@ -149,6 +31,6 @@
       <p id='historyStart'></p>
       <p id='subsStart'></p>
     </section>
-    <script src='dist/app/script.js'></script>
+    <script src='dist/ui/script.js'></script>
   </body>
 </html>
