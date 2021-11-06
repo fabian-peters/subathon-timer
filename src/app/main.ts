@@ -1,19 +1,19 @@
-import {app, BrowserWindow, dialog, ipcMain} from 'electron';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import * as path from 'path';
 import {
   exportHistory,
   exportSubHistory,
   resetHistory,
   resetSubHistory,
-  sendInit,
-  sendPause,
   startServer,
   updateConfigOnServer
 } from './server';
 import config from '../types/config';
-import {reloadListener} from './streamlabs';
+import { reloadListener } from './streamlabs';
 import history from '../types/history';
 import subscription from '../types/subscription';
+import { initTimer, togglePause } from './timer';
+import { convertToTimeString } from './utils';
 
 let win: BrowserWindow | undefined;
 
@@ -32,6 +32,8 @@ const createWindow = async () => {
   await win.loadFile(path.join(__dirname, '../../index.html'));
   sendStartTimes();
 
+  let initialTime = config.inTime;
+
   // continue timer from history?
   let lastSavedTime = history.map(item => {
     // @ts-ignore
@@ -48,17 +50,13 @@ const createWindow = async () => {
       detail: `Last time saved in history: ${convertToTimeString(lastSavedTime.time)} on ${new Date(lastSavedTime.timestamp).toLocaleString()}`
     });
     if (response === 0) {
-      sendInit(lastSavedTime.time / 60); // TODO what if widget is not running yet?
+      initialTime = lastSavedTime.time / 60;
     }
   }
-}
 
-const convertToTimeString = (time: number) => {
-  const hours = Math.floor(time / 3600),
-    minutes = Math.floor((time % 3600) / 60),
-    seconds = time % 60;
-  return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-};
+  // init timer
+  initTimer(initialTime);
+}
 
 export const sendStartTimes = () => {
   if (!win) return;
@@ -90,8 +88,8 @@ startServer();
 reloadListener(config.streamLabsTokens);
 
 ipcMain
-  .on('pause', sendPause)
-  .on('stop', () => sendInit())
+  .on('pause', togglePause)
+  .on('stop', () => initTimer())
   .on('history-reset', resetHistory)
   .on('history-export', exportHistory)
   .on('subs-reset', resetSubHistory)
@@ -105,6 +103,7 @@ ipcMain
     }
     reloadListener(config.streamLabsTokens);
     updateConfigOnServer(newConfig);
+    // TODO init timer if not started
   });
 
 export const sendError = (error: string) => win && win.webContents.send('error', error);

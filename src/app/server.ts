@@ -11,12 +11,14 @@ import { dialog } from 'electron';
 import * as fs from 'fs';
 import subscription, { Subscription } from '../types/subscription';
 import { sendStartTimes } from './main';
+import { increaseTimer } from './timer';
+import { WidgetData } from '../types/widgetData';
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-let addTimeTier1 = config.addTimeTier1;
+let addTimeTier1 = config.addTimeTier1; // TODO store values, store config or read directly
 let addTimeTier2 = config.addTimeTier2;
 let addTimeTier3 = config.addTimeTier3;
 
@@ -69,18 +71,17 @@ io.of('/subs').on('connection', s => {
 io.of('/timer').on('connection', s => {
   if (socketTimer) socketTimer.emit('error', 'only one timer widget allowed');
   socketTimer = s;
-  socketTimer.on('history', saveHistory);
   socketTimer.emit('config', config);
-  socketTimer.emit('init', config.inTime);
+  // updateWidgets(config.inTime); // TODO send data on connection
 });
 
-const saveHistory = (historyEntry: History) => {
+export const saveHistory = (historyEntry: History) => {
   history.push(historyEntry);
   socketHistory && socketHistory.emit('history-data', history);
   sendStartTimes();
 }
 
-export const resetHistory = () => { // TODO ask to reset when pressing stop?
+export const resetHistory = () => {
   history.splice(0, history.length); // cannot assign empty so use splice to remove all entries
   socketHistory && socketHistory.emit('history-data', history);
   sendStartTimes();
@@ -111,7 +112,7 @@ export const exportHistory = () => {
   }
 }
 
-export const resetSubHistory = () => { // TODO ask to reset when pressing stop?
+export const resetSubHistory = () => {
   subscription.splice(0, subscription.length); // cannot assign empty so use splice to remove all entries
   socketSubs && socketSubs.emit('subs-data', subscription);
   sendStartTimes();
@@ -167,9 +168,9 @@ export const updateConfigOnServer = (newConfig: Config) => {
   socketSubs && socketSubs.emit('config', newConfig);
 };
 
-export const sendPause = () => socketTimer && socketTimer.emit('pause');
-
-export const sendInit = (inTime: number = config.inTime) => socketTimer && socketTimer.emit('init', inTime);
+export const updateWidgets = (data: WidgetData) => {
+  socketTimer && socketTimer.emit('widget-data', data);
+}
 
 export const sendSub = (sub: Subscription) => {
   // TODO [#15] disable before timer was initially started
@@ -185,7 +186,7 @@ export const sendSub = (sub: Subscription) => {
       default: // Tier 1 = "1000", Prime might be "1" or "1000", and everything else should fallback to tier 1
           addTime = addTimeTier1;
   }
-  socketTimer && socketTimer.emit('sub', addTime);
+  increaseTimer(addTime);
 
   // add sub to history
   // apparently 'sub' does not include info who gifted the sub so we cannot create a cumulative gift count per user
