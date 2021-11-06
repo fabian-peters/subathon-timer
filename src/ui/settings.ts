@@ -1,5 +1,4 @@
-(window as any).bridge.on('config', (config: any) => {
-  (window as any).running.innerText = `Widget is running on http://localhost:${config.port}`;
+(window as any).bridge.on('load-config', (config: any) => {
   (window as any).streamLabsTokenInput.value = config.streamLabsTokens;
   (window as any).addTimeTier1Input.value = config.addTimeTier1;
   (window as any).addTimeTier2Input.value = config.addTimeTier2;
@@ -25,36 +24,9 @@
   (window as any).subHistoryRefreshInput.value = config.subHistoryRefresh;
 });
 
-(window as any).bridge.on('update-start-times', (startTimes: any) => {
-  if (isNaN(startTimes.history)) {
-    (window as any).historyStart.innerText = `No timer history found`;
-  } else {
-    (window as any).historyStart.innerText = `Timer history started at ${startTimes.history.toLocaleString()}`;
-  }
-
-  if (isNaN(startTimes.subs)) {
-    (window as any).subsStart.innerText = `No sub history found`;
-  } else {
-    (window as any).subsStart.innerText = `Sub history started at ${startTimes.subs.toLocaleString()}`;
-  }
-});
-
-const changePage = (page: 0 | 1) => {
-  (window as any).settings.style.display = ['none', 'flex'][page];
-  (window as any).info.style.display = ['unset', 'none'][page];
-  if (page) { // page = 1 is settings page
-    (window as any).bridge.send('settings');
-  }
-};
-
-(window as any).settingsButton.addEventListener('click', () => changePage(1));
-
-(window as any).backButton.addEventListener('click', () => changePage(0));
-
 ((window as any).settings as HTMLFormElement).addEventListener('submit', e => {
   e.preventDefault();
-  (window as any).running.innerText = `Widget is running on http://localhost:${Number((window as any).portInput.value)}`;
-  (window as any).bridge.send('config', {
+  (window as any).bridge.send('save-config', {
     streamLabsTokens: (window as any).streamLabsTokenInput.value
       .split(',')
       .map((token: string) => token.trim())
@@ -83,11 +55,9 @@ const changePage = (page: 0 | 1) => {
     subHistoryShowTotal: (window as any).subHistoryShowTotalInput.checked,
     subHistoryRefresh: (window as any).subHistoryRefreshInput.valueAsNumber
   });
-  changePage(0);
 });
 
-((window as any).pauseButton as HTMLButtonElement).addEventListener('click', () => (window as any).bridge.send('pause'));
-((window as any).stopButton as HTMLButtonElement).addEventListener('click', () => (window as any).bridge.send('stop')); // TODO add confirmation?
+(window as any).backButton.addEventListener('click', () => (window as any).bridge.send('close-settings'));
 (window as any).timerHistoryResetButton.addEventListener('click', () => (window as any).bridge.send('history-reset'));
 (window as any).timerHistoryExportButton.addEventListener('click', () => (window as any).bridge.send('history-export'));
 (window as any).subHistoryResetButton.addEventListener('click', () => (window as any).bridge.send('subs-reset'));

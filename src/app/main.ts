@@ -15,66 +15,75 @@ import subscription from '../types/subscription';
 import { initTimer, togglePause } from './timer';
 import { convertToTimeString } from './utils';
 
-let win: BrowserWindow | undefined;
+let mainWindow: BrowserWindow | undefined;
+let settingsWindow: BrowserWindow | undefined;
 
-const createWindow = async () => {
-  win = new BrowserWindow({
+const webPreferences = {
+  preload: path.join(__dirname, 'preload.js'),
+  contextIsolation: true,
+  enableRemoteModule: false,
+  nodeIntegration: false
+};
+
+const createMainWindow = () => {
+  mainWindow = new BrowserWindow({
+    width: 400,
     height: 300,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      enableRemoteModule: false,
-      nodeIntegration: false
-    },
-    width: 400
+    show: false,
+    webPreferences: webPreferences
   });
-  win.removeMenu();
-  await win.loadFile(path.join(__dirname, '../../index.html'));
-  sendStartTimes();
+  mainWindow.loadFile(path.join(__dirname, '../../index.html'));
+  mainWindow.removeMenu();
 
-  let initialTime = config.inTime;
+  mainWindow.once('ready-to-show', () => {
+    sendStartTimes();
 
-  // continue timer from history?
-  let lastSavedTime = history.map(item => {
-    // @ts-ignore
-    const timestamp = Date.parse(item.timestamp); // parse date to a number
-    return { ...item, timestamp };
-  }).sort((a, b) => b.timestamp - a.timestamp)[0];
-  if (lastSavedTime) {
-    const response = dialog.showMessageBoxSync(win, {
-      type: 'question',
-      buttons: ['Yes', 'No'],
-      defaultId: 1,
-      title: 'Continue from history?',
-      message: 'Do you want to continue the timer from the stored history?',
-      detail: `Last time saved in history: ${convertToTimeString(lastSavedTime.time)} on ${new Date(lastSavedTime.timestamp).toLocaleString()}`
-    });
-    if (response === 0) {
-      initialTime = lastSavedTime.time / 60;
+    mainWindow.show();
+
+    let initialTime = config.inTime;
+
+    // continue timer from history?
+    let lastSavedTime = history.map(item => {
+      // @ts-ignore
+      const timestamp = Date.parse(item.timestamp); // parse date to a number
+      return { ...item, timestamp };
+    }).sort((a, b) => b.timestamp - a.timestamp)[0];
+    if (lastSavedTime) {
+      const response = dialog.showMessageBoxSync(mainWindow, {
+        type: 'question',
+        buttons: ['Yes', 'No'],
+        defaultId: 1,
+        title: 'Continue from history?',
+        message: 'Do you want to continue the timer from the stored history?',
+        detail: `Last time saved in history: ${convertToTimeString(lastSavedTime.time)} on ${new Date(lastSavedTime.timestamp).toLocaleString()}`
+      });
+      if (response === 0) {
+        initialTime = lastSavedTime.time / 60;
+      }
     }
-  }
 
-  // init timer
-  initTimer(initialTime);
+    // init timer
+    initTimer(initialTime);
+  });
 }
 
 export const sendStartTimes = () => {
-  if (!win) return;
+  if (!mainWindow) return;
 
   // @ts-ignore
   let historyStartTime = new Date(Math.min(...(history.map(value => Date.parse(value.timestamp)))));
   // @ts-ignore
   let subsStartTime = new Date(Math.min(...(subscription.map(value => Date.parse(value.timestamp)))));
 
-  win.webContents.send('update-start-times', {
+  mainWindow.webContents.send('update-start-times', {
     history: historyStartTime,
     subs: subsStartTime
   });
 }
 
 app.on('ready', () => {
-  createWindow();
-  app.on('activate', () => BrowserWindow.getAllWindows().length === 0 && createWindow());
+  createMainWindow();
+  app.on('activate', () => BrowserWindow.getAllWindows().length === 0 && createMainWindow());
 });
 
 app.on('window-all-closed', () => {
@@ -87,6 +96,26 @@ startServer();
 
 reloadListener(config.streamLabsTokens);
 
+const createSettingsWindow = () => {
+  settingsWindow = new BrowserWindow({
+    modal: true,
+    parent: mainWindow,
+    width: 400,
+    height: 800,
+    show: false,
+    webPreferences: webPreferences
+  });
+  settingsWindow.loadFile(path.join(__dirname, '../../settings.html'));
+  settingsWindow.removeMenu();
+
+  settingsWindow.once('ready-to-show', () => {
+    // load config from file into new window
+    settingsWindow.webContents.send('load-config', JSON.parse(JSON.stringify(config)));
+
+    settingsWindow.show();
+  });
+};
+
 ipcMain
   .on('pause', togglePause)
   .on('stop', () => initTimer())
@@ -94,16 +123,16 @@ ipcMain
   .on('history-export', exportHistory)
   .on('subs-reset', resetSubHistory)
   .on('subs-export', exportSubHistory)
-  .on('settings', (event) => {
-    event.reply('config', JSON.parse(JSON.stringify(config)));
-  })
-  .on('config', (_event, newConfig) => {
+  .on('open-settings', createSettingsWindow)
+  .on('close-settings', () => settingsWindow.close())
+  .on('save-config', (_event, newConfig) => {
     for (let par in newConfig) {
       (config as any)[par] = newConfig[par];
     }
     reloadListener(config.streamLabsTokens);
     updateConfigOnServer(newConfig);
     // TODO init timer if not started
-  });
 
-export const sendError = (error: string) => win && win.webContents.send('error', error);
+    // close window after config is saved
+    settingsWindow.close();
+  });
