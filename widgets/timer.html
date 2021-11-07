@@ -38,6 +38,7 @@
         console.log("Connection to timer lost.")
         document.querySelector('span').innerText = "Not connected to timer";
         document.querySelector('p').innerText = "";
+        intervalIdDrawLine = stopTask(intervalIdDrawLine);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       });
       socket.on('error', msg => {
@@ -56,7 +57,7 @@
           timeHistory = [];
           drawLine(); // draw empty once to reset the graph
           timeHistory = new Array(timespan / refreshInterval);
-        } else if (!intervalIdDrawLine) { // initial start of timer
+        } else if (!intervalIdDrawLine) { // initial start of timer (or reconnect?)
           console.log('Initial start received. Starting graph...');
           drawLine(); // immediately start the graph (might make it look a bit weird because the spacing might be ~1s off, but that should be fine)
           intervalIdDrawLine = startTask(intervalIdDrawLine, drawLine, refreshInterval);
