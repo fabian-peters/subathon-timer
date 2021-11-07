@@ -81,6 +81,10 @@ export const sendStartTimes = () => {
   });
 }
 
+export const updateAppTimer = (timeString: string) => {
+  mainWindow.webContents.send('update-timer', timeString);
+}
+
 app.on('ready', () => {
   createMainWindow();
   app.on('activate', () => BrowserWindow.getAllWindows().length === 0 && createMainWindow());

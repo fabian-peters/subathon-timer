@@ -4,6 +4,7 @@ import { WidgetData } from '../types/widgetData';
 import { State } from '../types/state';
 import { startTask, stopTask } from './utils';
 import * as https from 'https';
+import { updateAppTimer } from './main';
 
 /*
 TODO
@@ -114,7 +115,7 @@ const setTime = (newTime: number) => {
   time = newTime;
   let data = new WidgetData(timerState, false, time, 0, 0); // TODO implement timer cap, total time and total subs
   console.log('Current time: ' + data.currentTimeString);
-  // TODO update timer in control app
+  updateAppTimer(data.currentTimeString);
   updateWidgets(data);
   handleWebhooks();
 };
