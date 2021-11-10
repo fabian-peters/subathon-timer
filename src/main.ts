@@ -19,14 +19,14 @@ let win: BrowserWindow | undefined;
 
 const createWindow = async () => {
   win = new BrowserWindow({
-    height: 300,
+    height: 380,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       enableRemoteModule: false,
       nodeIntegration: false
     },
-    width: 400
+    width: 420
   });
   win.removeMenu();
   await win.loadFile(path.join(__dirname, '../resources/index.html'));
