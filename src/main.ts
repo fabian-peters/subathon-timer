@@ -26,7 +26,7 @@ const createWindow = async () => {
       enableRemoteModule: false,
       nodeIntegration: false
     },
-    width: 420
+    width: 430
   });
   win.removeMenu();
   await win.loadFile(path.join(__dirname, '../resources/index.html'));
