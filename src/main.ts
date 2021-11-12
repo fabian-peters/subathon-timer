@@ -19,7 +19,7 @@ let win: BrowserWindow | undefined;
 
 const createWindow = async () => {
   win = new BrowserWindow({
-    height: 380,
+    height: 400,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
