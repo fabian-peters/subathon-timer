@@ -24,6 +24,8 @@ body {
 .controls svg:active {
   opacity: 0.5;
 }
+
+/* Settings Page Styles */
 #settings {
   display: flex;
   flex-direction: column;
@@ -35,6 +37,71 @@ body {
   display: flex;
   flex-direction: column;
 }
+.settings-title {
+  font-size: 1.5rem;
+  text-align: center;
+}
+.settings-section {
+  width: 372px;
+  min-height: 200px;
+  margin: 0px -6px 0px -1px;
+  padding: 5px 10px;
+  font-size: 14px;
+  border: 1px solid rgba(155, 155, 155, 1);
+  border-top: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+#backButtonContainer {
+  right: -5px;
+  top: -3px;
+}
+#backButton {
+  margin: 0px 10px;
+  width: fit-content;
+}
+
+/* Settings Navigation Styles */
+.nav-tabs {
+  font-size: 12px;
+  width: 392px;
+}
+ul.nav {
+  list-style-type: none;
+  width: 100%;
+  height: max-content;
+  padding: 0px;
+  margin: 0px;
+  display: flex;
+  justify-content: space-between;
+}
+li.nav-item {
+  flex-grow: 1;
+  display: flex;
+  align-content: center;
+  margin: -1px;
+  width: max-content;
+  padding: 6px 10px;
+  text-align: center;
+  border: 1px solid transparent;
+  border-bottom: 1px solid rgba(155, 155, 155, 1);
+  color: rgba(155, 155, 155, 1);
+  cursor: pointer;
+  border-radius: 6px 6px 0px 0px;
+  font-weight: 600;
+}
+li.nav-item:hover {
+  color: rgba(255, 255, 255, 1);
+}
+.nav-item.active {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 1);
+  border: 1px solid rgba(155, 155, 155, 1);
+  border-bottom: 1px solid transparent;
+}
+
+/* Settings Form Styling */
 input,
 button,
 textarea {
@@ -45,7 +112,7 @@ textarea {
   background: #4d4d4d;
   font-size: 1em;
   outline: none;
-  width: 250px;
+  width: 180px;
   box-sizing: border-box;
 }
 textarea {
@@ -56,12 +123,114 @@ button {
   cursor: pointer;
 }
 .colorInputContainer {
+  flex-wrap: nowrap;
   flex-direction: row !important;
-  justify-content: space-between !important;
-  width: 250px;
+  justify-content: flex-start;
+  align-items: center;
+  width: fit-content;
 }
 .colorInputContainer input {
   padding: 2px;
   width: 30px;
   height: 30px;
+  margin: 5px 10px !important;
+}
+.colorInputContainer .color-picker {
+  max-width: 30px;
+  padding: 0px !important;
+  background-color: transparent;
+}
+.input-lockup {
+  display: flex;
+  flex-direction: row !important;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+}
+.button-lockup {
+  display: flex;
+  flex-direction: row !important;
+  flex-wrap: nowrap;
+  justify-content: space-around;
+  align-items: center;
+}
+.input-lockup input, 
+.input-lockup textarea, 
+.input-lockup label,
+.input-lockup .label-div,
+.colorInputContainer label,
+.button-lockup button {
+  margin: 5px;
+}
+.button-lockup button {
+  padding: 0.5em 1em;
+}
+.form-submission {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  padding: 10px;
+}
+.form-submission button[type="submit"] {
+  background-color: rgb(40,118,246);
+  cursor: pointer;
+  margin: auto;
+}
+.form-submission button[type="submit"]:hover {
+  background-color: rgb(77, 143, 250);
+}
+
+/* Styling shortcodes */
+.hide {
+  display: none !important;
+}
+.w-full {
+  width: 100%;
+}
+.w-33 {
+  width: 33%;
+}
+.w-auto {
+  width: auto;
+}
+.w-170px {
+  width: 170px;
+}
+.min-w-50 {
+  min-width: 50%;
+}
+.min-w-170px {
+  min-width: 170px;
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
+.grow-1 {
+  flex-grow: 1;
+}
+.shrink-1 {
+  flex-shrink: 1;
+}
+.justify-center {
+  justify-content: center;
+}
+.text-nowrap {
+  white-space: nowrap;
+}
+.relative {
+  position: relative;
+}
+.absolute {
+  position: absolute;
+}
+.m-auto {
+  margin: auto;
+}
+.my-0 {
+  margin-bottom: 0px !important;
+  margin-top: 0px !important;
+}
+.font-sm {
+  font-size: 0.8em;
 }
