@@ -7,31 +7,42 @@
   <script src="./socket.io.js"></script>
 </head>
 <body>
-  <nobr><p style="text-shadow: 0 0 10px transparent; color: transparent">0:00</p></nobr>
+  <p style="text-shadow: 0 0 10px transparent; color: transparent; white-space: nowrap">0:00</p>
 <div style="background: transparent">
+  <span></span>
   <canvas></canvas>
 </div>
 <script>
   // TODO move script to src/scripts or resources/scripts? typescript?
   // TODO clean up code, add comments (like timer.html)
-  let history = [];
-  let intervalIdUpdateTime;
 
+  // graph
+  let history = []; // cache history to update graph if config changes
+  const canvas = document.getElementsByTagName('canvas')[0];
+  const ctx = canvas.getContext('2d');
+  ctx.lineWidth = 5; // TODO reduce width if timespan greater than x? add to config?
+  ctx.lineJoin = 'bevel';
+
+  // register events
   const socket = io("/history");
+  socket.on('connect', () => {
+    console.log('Connected to timer.');
+    document.querySelector('span').innerText = "";
+  });
+  socket.on('disconnect', () => {
+    console.log("Connection to timer lost.")
+    document.querySelector('span').innerText = "Not connected to timer";
+    document.querySelector('p').innerText = "";
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  });
+  socket.on('error', msg => {
+    document.querySelector('span').innerText = msg;
+  });
+  socket.on('config', config => updateConfig(config));
+  socket.on('update', data => setTime(data.totalTimeString));
   socket.on('history-data', historyData => {
     history = historyData
     drawLine(history);
-
-    if (history.length === 0) {
-      if (intervalIdUpdateTime) { // stop update if history was reset
-        stopTask(intervalIdUpdateTime);
-      }
-      setTime(0);
-    } else {
-      let startTime = Math.floor(Math.min.apply(Math, history.map(item => Date.parse(item.timestamp))) / 1000);
-      updateTime(startTime);
-      intervalIdUpdateTime = startTask(intervalIdUpdateTime, () => updateTime(startTime), 1);
-    }
   });
   socket.on('history-export', (bgColor, callback) => {
     const globalCompositeOperation = ctx.globalCompositeOperation;
@@ -41,73 +52,40 @@
     callback(canvas.toDataURL());
     ctx.globalCompositeOperation = globalCompositeOperation;
   });
-  socket.on('error', msg => {
-    document.querySelector('div').innerText = msg;
-  });
 
-  const updateTime = (startTime) => {
-    let currentTime = Math.floor(Date.now() / 1000);
-    let timeSinceStart = currentTime - startTime;
-    if (Number.isInteger(timeSinceStart)) {
-      setTime(timeSinceStart);
-    }
-  }
-
-  const setTime = time => {
-    const days = Math.floor(time / 86400),
-      hours = Math.floor((time % 86400) / 3600),
-      minutes = Math.floor((time % 3600) / 60),
-      seconds = time % 60;
-    // console.log(days + 'd ' + hours + 'h ' + minutes + 'min ' + seconds + 's')
-    document.querySelector('p').innerText = `${days ? `${days}d ` : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
-
-    // TODO add webhooks for total time? see #14
-  };
-
-  const canvas = document.getElementsByTagName('canvas')[0];
-  const ctx = canvas.getContext('2d');
-  ctx.lineWidth = 5; // TODO reduce width if timespan greater than x? add to config?
-  ctx.lineJoin = 'bevel';
-
-  socket.on('config', config => {
+  /**
+   * Update the configuration based on the provided config.
+   *
+   * @param config the config containing the new values that should be used
+   */
+  const updateConfig = (config) => {
     document.querySelector('p').hidden = !config.timerHistoryShowTotal;
 
     document.querySelector('div').style.background = config.bgColor;
     document.querySelector('p').style.color = config.timerColor;
     document.querySelector('p').style.textShadow = `0px 0px 10px ${config.timerShadowColor}`;
     ctx.strokeStyle = config.lineColor;
+
     drawLine(history);
-  });
+  }
 
   /**
-   * Run a task at a certain interval.
-   * If it is already running, stop the old interval first.
+   * Update the displayed total time to the given time.
    *
-   * @param intervalId the intervalId for this task
-   * @param task the task/function to execute
-   * @param interval the interval to run the task (in seconds)
-   * @returns {number}
+   * @param timeAsString the timer after update formatted to be displayed
    */
-  const startTask = (intervalId, task, interval) => {
-    stopTask(intervalId)
-    return setInterval(task, interval * 1000);
+  const setTime = timeAsString => {
+    document.querySelector('p').innerText = timeAsString ? timeAsString : "";
   };
 
   /**
-   * Stop the task/interval with the given id.
+   * Normalize values in array (between 0 and 1).
    *
-   * @param intervalId the id of the interval to stop
-   * @returns {null} null to reset intervalId
+   * @param values the array to normalize
+   * @returns {*[]} the array with the normalized values
    */
-  const stopTask = (intervalId) => {
-    if (intervalId) {
-      clearInterval(intervalId);
-    }
-    return null;
-  };
-
   const getNormalizedValues = (values) => {
-    // TODO limit vertical zoom like in timer widget? probably not needed here
+    // TODO [#21] always scale y with 0 as lowest
     let min = Math.min.apply(Math, values);
     let max = Math.max.apply(Math, values);
 
@@ -120,8 +98,12 @@
     return normalized;
   };
 
+  /**
+   * Draw the line graph of the total history of the provided data.
+   *
+   * @param data the graph data
+   */
   const drawLine = (data) => {
-    // TODO add possibility to limit the timespan of the graph
     data = data
       .map(item => {
         const timestamp = Date.parse(item.timestamp); // parse date to a number

@@ -45,7 +45,7 @@
         document.querySelector('span').innerText = msg;
       });
       socket.on('config', newConfig => updateConfig(newConfig));
-      socket.on('widget-data', data => {
+      socket.on('update', data => {
         setTime(data.currentTime, data.currentTimeString);
 
         if (data.timerState === 'not-started') { // reset / init
@@ -76,6 +76,7 @@
         document.querySelector('p').style.color = config.timerColor;
         document.querySelector('p').style.textShadow = `0px 0px 10px ${config.timerShadowColor}`;
         ctx.strokeStyle = config.lineColor;
+        // TODO update current graph; only possible if timer calculates graph?
 
         // update history graph
         let oldSize = timespan / refreshInterval;
@@ -136,7 +137,7 @@
        */
       const setTime = (newTime, timeAsString) => {
         time = newTime; // still needed for the graph even though timer is now running in app
-        document.querySelector('p').innerText = timeAsString;
+        document.querySelector('p').innerText = timeAsString ? timeAsString : "";
       };
 
       /**
@@ -153,7 +154,7 @@
         let min = Math.min.apply(Math, points);
         let max = Math.max.apply(Math, points);
         let range = Math.max(max - min, 2 * timespan); // range = timespan would mean pretty steep curve even though nothing really happened so use at least twice the time span as vertical range
-        points = points.map(time => 1 - ((time - min) / range))
+        points = points.map(time => 1 - ((time - min) / range)); // TODO move point calculation to app? pros: graph doesn't reset on reconnect and multiple timers have the same graph
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -167,7 +168,7 @@
         for (let i = 0; i < points.length; i++) {
           ctx.lineTo(i * (width / (points.length - 1)) + offset, height * points[i] + offset);
         }
-        ctx.lineTo(canvas.width, height * points[points.length - 1] + offset)
+        ctx.lineTo(canvas.width, height * points[points.length - 1] + offset);
         ctx.stroke();
       };
     </script>

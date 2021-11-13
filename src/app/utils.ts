@@ -1,8 +1,21 @@
 export const convertToTimeString = (time: number) => {
+  if (!time) return '0:00';
+
   const hours = Math.floor(time / 3600),
     minutes = Math.floor((time % 3600) / 60),
     seconds = time % 60;
   return `${hours ? `${hours}:${minutes < 10 ? '0' : ''}` : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+};
+
+// different format used for total time because it may be significantly longer TODO instead use the same and build switch if it is too long?
+export const convertToTotalTimeString = (totalTime: number) => {
+  if (!totalTime) return '0:00';
+
+  const days = Math.floor(totalTime / 86400),
+    hours = Math.floor((totalTime % 86400) / 3600),
+    minutes = Math.floor((totalTime % 3600) / 60),
+    seconds = totalTime % 60;
+  return `${days ? `${days}d ` : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
 };
 
 /**
