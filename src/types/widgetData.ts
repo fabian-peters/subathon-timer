@@ -1,5 +1,6 @@
 import { State } from './state';
-import { convertToTimeString } from '../app/utils';
+import { convertToTimeString, convertToTotalTimeString } from '../app/utils';
+import history from './history';
 
 export class WidgetData {
   timestamp: Date = new Date();
@@ -7,18 +8,38 @@ export class WidgetData {
   capReached: boolean;
   currentTime: number;
   currentTimeString: string;
+  startTimestamp: Date;
   totalTime: number;
   totalTimeString: string;
   totalSubs: number;
+  // TODO [#8] add start startSubs/subsOffset?
 
-
-  constructor(timerState: State, capReached: boolean, currentTime: number, totalTime: number, totalSubs: number) {
+  constructor(timerState: State, capReached: boolean, currentTime: number) {
     this.timerState = timerState;
     this.capReached = capReached;
     this.currentTime = currentTime;
     this.currentTimeString = convertToTimeString(currentTime);
+
+    // calculate total time
+    let startTime = this.getStartTime();
+    const now = Math.floor((this.timestamp as unknown as number) / 1000);
+    let totalTime = now - startTime;
+    if (!Number.isInteger(totalTime)) {
+      totalTime = 0;
+    }
+
+    // console.log(`${this.startTimestamp.toLocaleString()} (${startTime}), ${this.timestamp.toLocaleString()} (${now}): ${totalTime}`); // TODO remove
+
     this.totalTime = totalTime;
-    this.totalTimeString = convertToTimeString(totalTime);
-    this.totalSubs = totalSubs;
+    this.totalTimeString = convertToTotalTimeString(totalTime);
+
+    this.totalSubs = 0; // TODO read from history (+config)?
   }
+
+  private getStartTime(): number {
+    // TODO [#8] allow start time from config
+    this.startTimestamp = new Date(Math.min.apply(Math, history.map(item => Date.parse(item.timestamp as unknown as string))));
+    return Math.floor((this.startTimestamp as unknown as number) / 1000);
+  }
+
 }

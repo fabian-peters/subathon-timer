@@ -1,8 +1,8 @@
 import config from '../types/config';
-import { saveHistory, updateWidgets } from './server';
+import { saveHistory, updateAllWidgets, updateTimerWidget } from './server';
 import { WidgetData } from '../types/widgetData';
 import { State } from '../types/state';
-import { startTask, stopTask } from './utils';
+import { convertToTimeString, startTask, stopTask } from './utils';
 import * as https from 'https';
 import { updateAppTimer } from './main';
 
@@ -10,11 +10,9 @@ import { updateAppTimer } from './main';
 TODO
  - update time on config change + app start
  - update timerHistoryInterval if changed in config
- - display current time in control app
  - refactor const to function?
  - refactor other widgets
  - run reformat over all source files
- - enable multiple connections per widget
  */
 
 /** the current time of the timer */
@@ -22,9 +20,6 @@ let time = 0;
 
 /** the current state of the timer, e.g. is it running/paused? */
 let timerState = State.NOT_STARTED;
-
-/** background task handling the countdown */
-let timerCountdown: NodeJS.Timer;
 
 /** background task to save the timer history */
 let timerSaveHistory: NodeJS.Timer;
@@ -40,6 +35,16 @@ let timerSaveHistory: NodeJS.Timer;
 //   }
 
 /**
+ * Stuff to do every tick, i.e. every second.
+ * This is running even if timer is not started yet or timer already finished.
+ */
+const tick = () => {
+  countDown(); // has internal check if timer is running
+  updateAllWidgets();
+}
+startTask(null, tick, 1); // run all the time so don't store the id
+
+/**
  * Initialize/reset the timer (without starting it).
  * This also stops any running background task like the countdown.
  *
@@ -47,12 +52,13 @@ let timerSaveHistory: NodeJS.Timer;
  */
 export const initTimer = (initialTime: number = config.inTime) => {
   // make sure background tasks are not running
-  timerCountdown = stopTask(timerCountdown);
   timerSaveHistory = stopTask(timerSaveHistory);
 
-  // pause, reset time and default values
+  // reset timer
   timerState = State.NOT_STARTED;
   setTime(Math.floor(initialTime * 60));
+
+  updateAllWidgets();
 };
 
 /**
@@ -66,7 +72,6 @@ export const togglePause = () => {
       timerState = State.RUNNING;
       saveToTimerHistory(); // update history to include the initial start
       timerSaveHistory = startTask(timerSaveHistory, saveToTimerHistory, config.timerHistoryInterval);
-      timerCountdown = startTask(timerCountdown, countDown, 1);
       console.log('Timer started!');
       return;
     case State.RUNNING:
@@ -113,12 +118,18 @@ export const increaseTimer = (additionalTime: number) => {
  */
 const setTime = (newTime: number) => {
   time = newTime;
-  let data = new WidgetData(timerState, false, time, 0, 0); // TODO implement timer cap, total time and total subs
-  console.log('Current time: ' + data.currentTimeString);
-  updateAppTimer(data.currentTimeString);
-  updateWidgets(data);
+  let timeString = convertToTimeString(time);
+  console.log('Current time: ' + timeString);
+  updateAppTimer(timeString);
   handleWebhooks();
 };
+
+/**
+ * TODO
+ */
+export const getDataForWidgets = () => {
+  return new WidgetData(timerState, false, time); // TODO implement timer cap, total time and total subs
+}
 
 /**
  * Trigger the webhook if the current time matches the configured trigger and webhooks are enabled.
@@ -153,11 +164,10 @@ const countDown = () => {
 
   setTime(time - 1);
   if (time === 0) {
-    // stop background tasks
-    timerCountdown = stopTask(timerCountdown);
+    // stop timer history
     timerSaveHistory = stopTask(timerSaveHistory);
-
     saveToTimerHistory(); // update history to include the 0
+
     timerState = State.FINISHED;
   }
 };
