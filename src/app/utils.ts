@@ -19,6 +19,26 @@ export const convertToTotalTimeString = (totalTime: number) => {
 };
 
 /**
+ * Normalize values in array (between 0 and 1).
+ *
+ * @param values the array to normalize
+ * @param useZeroAsMin TODO
+ * @returns {*[]} the array with the normalized values
+ */
+export const getNormalizedValues = (values: number[], useZeroAsMin: boolean = false) => {
+  let min = useZeroAsMin ? 0 : Math.min.apply(Math, values);
+  let max = Math.max.apply(Math, values);
+
+  let normalized = [];
+  for (let value of values) {
+    if (Number.isInteger(value)) {
+      normalized.push((value - min) / (max - min));
+    }
+  }
+  return normalized;
+};
+
+/**
  * Run a task at a certain interval.
  * If it is already running, stop the old interval first.
  *

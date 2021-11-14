@@ -1,6 +1,7 @@
 import { History } from '../types/history';
 import { Config } from '../types/config';
 import { WidgetData } from '../types/widgetData';
+import { getNormalizedValues } from '../app/utils';
 
 const io = require("socket.io/client-dist/socket.io.min"); // use socket.io/client-dist instead of socket.io-client because streamlabs requires older client version
 
@@ -69,26 +70,6 @@ const setTime = (timeAsString: string) => {
 };
 
 /**
- * Normalize values in array (between 0 and 1).
- *
- * @param values the array to normalize
- * @returns {*[]} the array with the normalized values
- */
-const getNormalizedValues = (values: number[]) => {
-  // TODO [#21] always scale y with 0 as lowest
-  let min = Math.min.apply(Math, values);
-  let max = Math.max.apply(Math, values);
-
-  let normalized = [];
-  for (let value of values) {
-    if (Number.isInteger(value)) {
-      normalized.push((value - min) / (max - min));
-    }
-  }
-  return normalized;
-};
-
-/**
  * Draw the line graph of the total history of the provided data.
  *
  * @param data the graph data
@@ -103,7 +84,7 @@ const drawLine = (data: any[]) => { // TODO replace by History[]?
     .sort((a, b) => a.timestamp - b.timestamp); // sort by timestamp in case json file is weird
 
   let dates = getNormalizedValues(data.map(value => value.timestamp));
-  let times = getNormalizedValues(data.map(value => value.time)).map(time => 1 - time);
+  let times = getNormalizedValues(data.map(value => value.time), true).map(time => 1 - time);
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 

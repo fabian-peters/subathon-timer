@@ -1,5 +1,6 @@
 import { Config } from '../types/config';
 import { WidgetData } from '../types/widgetData';
+import { startTask, stopTask } from '../app/utils';
 
 const io = require("socket.io/client-dist/socket.io.min"); // use socket.io/client-dist instead of socket.io-client because streamlabs requires older client version
 
@@ -90,33 +91,6 @@ const updateConfig = (config: Config) => { // TODO remove token before sending?
     }
   }
 }
-
-/**
- * Run a task at a certain interval.
- * If it is already running, stop the old interval first.
- *
- * @param intervalId the intervalId for this task
- * @param task the task/function to execute
- * @param interval the interval to run the task (in seconds)
- * @returns {number}
- */
-const startTask = (intervalId: NodeJS.Timer, task: () => void, interval: number) => {
-  stopTask(intervalId)
-  return setInterval(task, interval * 1000);
-};
-
-/**
- * Stop the task/interval with the given id.
- *
- * @param intervalId the id of the interval to stop
- * @returns {null} null to reset intervalId
- */
-const stopTask = (intervalId: NodeJS.Timer): null => {
-  if (intervalId) {
-    clearInterval(intervalId);
-  }
-  return null;
-};
 
 /**
  * Update the internal time and the displayed time to the given time.
