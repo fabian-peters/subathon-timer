@@ -46,7 +46,7 @@ app.get('/', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widge
 app.get('/history', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widgets', 'history.html')));
 app.get('/subs', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widgets', 'subs.html')));
 app.get('/widgets.css', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widgets', 'widgets.css')));
-app.get('/socket.io.js', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'node_modules', 'socket.io', 'client-dist', 'socket.io.min.js')));
+app.use(express.static(path.join(__dirname, '..', '..', 'dist', 'widgets'))); // widget scripts
 
 io.of('/timer').on('connection', socket => {
   console.log('Timer widget connected.');
