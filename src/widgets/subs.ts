@@ -1,19 +1,42 @@
 import { Subscription } from '../types/subscription';
 import { Config } from '../types/config';
+import { WidgetData } from '../types/widgetData';
 
 const io = require("socket.io/client-dist/socket.io.min"); // use socket.io/client-dist instead of socket.io-client because streamlabs requires older client version
 
-// TODO clean up code, add comments (like timer.js)
 // TODO reduce code duplication with timer history if possible
-let subs: Subscription[] = [];
+
+// background tasks
 let intervalIdDrawLine: NodeJS.Timer;
 
+// graph
+let subs: Subscription[] = [];
+const canvas = document.getElementsByTagName('canvas')[0];
+const ctx = canvas.getContext('2d');
+ctx.lineWidth = 5; // TODO reduce width if timespan greater than x?
+ctx.lineJoin = 'bevel';
+
+// register events
 const socket = io("/subs");
+socket.on('connect', () => {
+  console.log('Connected to timer.');
+  document.querySelector('span').innerText = "";
+});
+socket.on('disconnect', () => {
+  console.log("Connection to timer lost.")
+  document.querySelector('span').innerText = "Not connected to timer";
+  document.querySelector('p').innerText = "";
+  intervalIdDrawLine = stopTask(intervalIdDrawLine);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
+socket.on('error', (msg: string) => {
+  document.querySelector('span').innerText = msg;
+});
+socket.on('config', (newConfig: Config) => updateConfig(newConfig));
+socket.on('update', (data: WidgetData) => setSubCount(data.totalSubs));
 socket.on('subs-data', (subsData: Subscription[]) => {
   subs = subsData
-  setSubCount(subs.length);
   drawLine(subs);
-  // console.log('subs: ' + subs.map(item => Date.parse(item.timestamp)));
 });
 socket.on('subs-export', (bgColor: string, callback: (dataUrl: string) => void) => {
   const globalCompositeOperation = ctx.globalCompositeOperation;
@@ -23,23 +46,14 @@ socket.on('subs-export', (bgColor: string, callback: (dataUrl: string) => void) 
   callback(canvas.toDataURL());
   ctx.globalCompositeOperation = globalCompositeOperation;
 });
-socket.on('error', (msg: string) => {
-  document.querySelector('div').innerText = msg;
-});
 
-const setSubCount = (count: number) => {
-  document.querySelector('p').innerText = `${count}`;
-
-  // TODO add webhooks for sub count? see #14
-};
-
-const canvas = document.getElementsByTagName('canvas')[0];
-const ctx = canvas.getContext('2d');
-ctx.lineWidth = 5; // TODO reduce width if timespan greater than x?
-ctx.lineJoin = 'bevel';
-
-socket.on('config', (config: Config) => {
-  document.querySelector('p').hidden = !config.subHistoryShowTotal; // TODO add offset to config see #8
+/**
+ * Update the configuration based on the provided config.
+ *
+ * @param config the config containing the new values that should be used
+ */
+const updateConfig = (config: Config) => {
+  document.querySelector('p').hidden = !config.subHistoryShowTotal;
 
   document.querySelector('div').style.background = config.bgColor;
   document.querySelector('p').style.color = config.timerColor;
@@ -48,7 +62,16 @@ socket.on('config', (config: Config) => {
 
   drawLine(subs);
   intervalIdDrawLine = startTask(intervalIdDrawLine, () => drawLine(subs), config.subHistoryRefresh);
-});
+};
+
+/**
+ * Update the displayed sub count.
+ *
+ * @param count the new sub count
+ */
+const setSubCount = (count: number) => {
+  document.querySelector('p').innerText = `${count}`;
+};
 
 /**
  * Run a task at a certain interval.
@@ -77,8 +100,14 @@ const stopTask = (intervalId: NodeJS.Timer): null => {
   return null;
 };
 
+/**
+ * Normalize values in array (between 0 and 1).
+ *
+ * @param values the array to normalize
+ * @returns {*[]} the array with the normalized values
+ */
 const getNormalizedValues = (values: number[]) => {
-  // TODO limit vertical zoom like in timer widget? probably not needed here
+  // TODO [#21] always scale y with 0 as lowest, needed/useful if offset/initialSubCount is added?
   let min = Math.min.apply(Math, values);
   let max = Math.max.apply(Math, values);
 
@@ -91,6 +120,11 @@ const getNormalizedValues = (values: number[]) => {
   return normalized;
 };
 
+/**
+ * Draw the line graph of the sub count history of the provided data.
+ *
+ * @param data the graph data
+ */
 const drawLine = (data: any[]) => {  // TODO replace by Subscription[]?
   // TODO add possibility to limit the timespan of the graph
   // TODO use same start time as history (could get from widgetData); ties in with todo above

@@ -180,7 +180,6 @@ export const updateTimerWidget = () => {
 };
 
 export const sendSub = (sub: Subscription) => {
-  // TODO [#15] disable before timer was initially started
   // add time to timer
   let addTime;
   switch (sub.tier) {
@@ -198,10 +197,11 @@ export const sendSub = (sub: Subscription) => {
   // add sub to history
   // apparently 'sub' does not include info who gifted the sub so we cannot create a cumulative gift count per user
   //  -> update as soon as that information is available in API
-  if (config.subHistoryEnabled) {
+  if (config.subHistoryEnabled) { // TODO add same settings as increaseTimer for subCount? if yes, use separate settings
     subscription.push(sub);
     io.of('/subs').emit('subs-data', subscription);
   }
 
+  updateAllWidgets();
   sendStartTimes();
 }

@@ -98,7 +98,7 @@ export const increaseTimer = (additionalTime: number) => {
   // do not increase timer if it already hit zero or disabled in settings TODO [#20] also if timer cap is hit
   if (timerState === State.FINISHED ||
     (timerState === State.NOT_STARTED && !config.addTimeBeforeStart) ||
-    (timerState == State.PAUSED && !config.addTimePaused)){
+    (timerState === State.PAUSED && !config.addTimePaused)){
     return;
   }
 
