@@ -1,6 +1,7 @@
 import { State } from './state';
 import { convertToTimeString, convertToTotalTimeString } from '../app/utils';
 import history from './history';
+import subscription from './subscription';
 
 export class WidgetData {
   timestamp: Date = new Date();
@@ -33,7 +34,7 @@ export class WidgetData {
     this.totalTime = totalTime;
     this.totalTimeString = convertToTotalTimeString(totalTime);
 
-    this.totalSubs = 0; // TODO read from history (+config)?
+    this.totalSubs = subscription.length; // TODO [#8] add offset
   }
 
   private getStartTime(): number {
