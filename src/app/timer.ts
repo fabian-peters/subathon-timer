@@ -55,7 +55,7 @@ export const initTimer = (initialTime: number = config.inTime) => {
   timerSaveHistory = stopTask(timerSaveHistory);
 
   // reset timer
-  timerState = State.NOT_STARTED;
+  timerState = initialTime > 0 ? State.NOT_STARTED : State.FINISHED;
   setTime(Math.floor(initialTime * 60));
 
   updateAllWidgets();
