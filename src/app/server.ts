@@ -50,6 +50,8 @@ app.use(express.static(path.join(__dirname, '..', '..', 'dist', 'widgets'))); //
 
 io.of('/timer').on('connection', socket => {
   console.log('Timer widget connected.');
+  socket.on('disconnect', (reason: string) => console.log(`Timer widget disconnected (${reason}).`));
+
   // initially load config and data
   socket.emit('config', config);
   socket.emit('update', getDataForWidgets());
@@ -57,6 +59,8 @@ io.of('/timer').on('connection', socket => {
 
 io.of('/history').on('connection', socket => {
   console.log('History widget connected.');
+  socket.on('disconnect', (reason: string) => console.log(`History widget disconnected (${reason}).`));
+
   // initially load config and data
   socket.emit('config', config);
   socket.emit('update', getDataForWidgets());
@@ -65,6 +69,8 @@ io.of('/history').on('connection', socket => {
 
 io.of('/subs').on('connection', socket => {
   console.log('Subs widget connected.');
+  socket.on('disconnect', (reason: string) => console.log(`Subs widget disconnected (${reason}).`));
+
   // initially load config and data
   socket.emit('config', config);
   socket.emit('update', getDataForWidgets());
