@@ -1,7 +1,7 @@
 import { History } from '../types/history';
 import { Config } from '../types/config';
 import { WidgetData } from '../types/widgetData';
-import { getNormalizedValues } from '../app/utils';
+import { getNormalizedValues } from '../utils';
 
 const io = require("socket.io/client-dist/socket.io.min"); // use socket.io/client-dist instead of socket.io-client because streamlabs requires older client version
 

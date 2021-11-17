@@ -1,5 +1,5 @@
 import { State } from './state';
-import { convertToTimeString, convertToTotalTimeString } from '../app/utils';
+import { convertToTimeString, convertToTotalTimeString } from '../utils';
 import history from './history';
 import subscription from './subscription';
 

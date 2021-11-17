@@ -13,7 +13,7 @@ import { reloadListener } from './streamlabs';
 import history from '../types/history';
 import subscription from '../types/subscription';
 import { initTimer, togglePause } from './timer';
-import { convertToTimeString } from './utils';
+import { convertToTimeString } from '../utils';
 
 let mainWindow: BrowserWindow | undefined;
 let settingsWindow: BrowserWindow | undefined;
