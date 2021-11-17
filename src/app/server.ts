@@ -180,9 +180,8 @@ export const updateAllWidgets = () => {
   io.of('/subs').emit('update', data);
 }
 
-export const updateTimerWidget = () => {
-  const data: WidgetData = getDataForWidgets();
-  io.of('/timer').emit('update', data);
+export const animateTimerInWidget = (additionalTime: number) => {
+  io.of('/timer').emit('animate-timer', additionalTime);
 };
 
 export const sendSub = (sub: Subscription) => {
