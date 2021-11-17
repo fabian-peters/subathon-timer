@@ -1,6 +1,6 @@
 import { Config } from '../types/config';
 import { WidgetData } from '../types/widgetData';
-import { startTask, stopTask } from '../utils';
+import { convertToTimeString, startTask, stopTask } from '../utils';
 
 const io = require("socket.io/client-dist/socket.io.min"); // use socket.io/client-dist instead of socket.io-client because streamlabs requires older client version
 
@@ -36,7 +36,7 @@ socket.on('error', (msg: string) => {
 });
 socket.on('config', (newConfig: Config) => updateConfig(newConfig));
 socket.on('update', (data: WidgetData) => {
-  setTime(data.currentTime, data.currentTimeString);
+  setTime(data.currentTime);
 
   if (data.timerState === 'not-started') { // reset / init
     console.log('Reset or init received. Resetting graph...');
@@ -52,6 +52,15 @@ socket.on('update', (data: WidgetData) => {
     drawLine(); // immediately start the graph (might make it look a bit weird because the spacing might be ~1s off, but that should be fine)
     intervalIdDrawLine = startTask(intervalIdDrawLine, drawLine, refreshInterval);
   }
+});
+socket.on('animate-timer', (additionalTime: number) => {
+  let offset = Math.floor(additionalTime / 60); // this is to offset the inaccuracy caused by overwriting the values every second with normal update; '60' because it works
+  let i = Math.floor(additionalTime + offset);
+  const interval: NodeJS.Timer = setInterval(() => { // TODO stop on reset/connection loss; hide timer?
+    if (i === 0) return clearInterval(interval);
+    setTime(time + 1);
+    i -= 1;
+  }, 25);
 });
 
 /**
@@ -96,11 +105,10 @@ const updateConfig = (config: Config) => { // TODO remove token before sending?
  * Update the internal time and the displayed time to the given time.
  *
  * @param newTime the time after update
- * @param timeAsString the timer after update formatted to be displayed
  */
-const setTime = (newTime: number, timeAsString: string) => {
-  time = newTime; // still needed for the graph even though timer is now running in app
-  document.querySelector('p').innerText = timeAsString ? timeAsString : "";
+const setTime = (newTime: number) => {
+  time = newTime; // still needed for the graph/animation even though timer is now running in app
+  document.querySelector('p').innerText = convertToTimeString(time);
 };
 
 /**

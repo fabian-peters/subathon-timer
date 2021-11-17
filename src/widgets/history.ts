@@ -1,7 +1,7 @@
 import { History } from '../types/history';
 import { Config } from '../types/config';
 import { WidgetData } from '../types/widgetData';
-import { getNormalizedValues } from '../utils';
+import { convertToTotalTimeString, getNormalizedValues } from '../utils';
 
 const io = require("socket.io/client-dist/socket.io.min"); // use socket.io/client-dist instead of socket.io-client because streamlabs requires older client version
 
@@ -30,7 +30,7 @@ socket.on('error', (msg: string) => {
   document.querySelector('span').innerText = msg;
 });
 socket.on('config', (config: Config) => updateConfig(config));
-socket.on('update', (data: WidgetData) => setTime(data.totalTimeString));
+socket.on('update', (data: WidgetData) => setTime(data.totalTime));
 socket.on('history-data', (historyData: History[]) => {
   timerHistory = historyData
   drawLine(timerHistory);
@@ -63,10 +63,10 @@ const updateConfig = (config: Config) => {
 /**
  * Update the displayed total time to the given time.
  *
- * @param timeAsString the timer after update formatted to be displayed
+ * @param totalTime the timer after update
  */
-const setTime = (timeAsString: string) => {
-  document.querySelector('p').innerText = timeAsString ? timeAsString : "";
+const setTime = (totalTime: number) => {
+  document.querySelector('p').innerText = convertToTotalTimeString(totalTime);
 };
 
 /**

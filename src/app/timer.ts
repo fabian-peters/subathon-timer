@@ -1,5 +1,5 @@
 import config from '../types/config';
-import { saveHistory, updateAllWidgets, updateTimerWidget } from './server';
+import { animateTimerInWidget, saveHistory, updateAllWidgets } from './server';
 import { WidgetData } from '../types/widgetData';
 import { State } from '../types/state';
 import { convertToTimeString, startTask, stopTask } from '../utils';
@@ -104,10 +104,14 @@ export const increaseTimer = (additionalTime: number) => {
 
   let i = Math.floor(additionalTime);
   const interval: NodeJS.Timer = setInterval(() => {
-    if (i === 0) return clearInterval(interval);
+    if (i === 0) {
+      updateAllWidgets(); // update widgets with final value
+      return clearInterval(interval);
+    }
     setTime(time + 1);
     i -= 1;
   }, 25);
+  animateTimerInWidget(additionalTime); // trigger "animation" on client side to reduce network load
 };
 
 /**
