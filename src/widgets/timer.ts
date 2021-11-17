@@ -1,6 +1,6 @@
 import { Config } from '../types/config';
 import { WidgetData } from '../types/widgetData';
-import { startTask, stopTask } from '../app/utils';
+import { startTask, stopTask } from '../utils';
 
 const io = require("socket.io/client-dist/socket.io.min"); // use socket.io/client-dist instead of socket.io-client because streamlabs requires older client version
 

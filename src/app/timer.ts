@@ -2,7 +2,7 @@ import config from '../types/config';
 import { saveHistory, updateAllWidgets, updateTimerWidget } from './server';
 import { WidgetData } from '../types/widgetData';
 import { State } from '../types/state';
-import { convertToTimeString, startTask, stopTask } from './utils';
+import { convertToTimeString, startTask, stopTask } from '../utils';
 import * as https from 'https';
 import { updateAppTimer } from './main';
 
