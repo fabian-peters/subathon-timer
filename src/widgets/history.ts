@@ -1,7 +1,7 @@
 import { History } from '../types/history';
 import { Config } from '../types/config';
 import { WidgetData } from '../types/widgetData';
-import { convertToTotalTimeString, getNormalizedValues } from '../utils';
+import { convertToTimeString, getNormalizedValues } from '../utils';
 
 const io = require("socket.io/client-dist/socket.io.min"); // use socket.io/client-dist instead of socket.io-client because streamlabs requires older client version
 
@@ -66,7 +66,7 @@ const updateConfig = (config: Config) => {
  * @param totalTime the timer after update
  */
 const setTime = (totalTime: number) => {
-  document.querySelector('p').innerText = convertToTotalTimeString(totalTime);
+  document.querySelector('p').innerText = convertToTimeString(totalTime);
 };
 
 /**
