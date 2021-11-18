@@ -94,10 +94,10 @@ const drawLine = (data: any[]) => { // TODO replace by History[]?
   const height = canvas.height - ctx.lineWidth;
 
   ctx.beginPath();
-  ctx.moveTo(0, height * times[0] + offset);
+  ctx.moveTo(0, height * (times[0] ? times[0] : 0) + offset);
   for (let i = 0; i < data.length; i++) {
     ctx.lineTo(width * dates[i] + offset, height * times[i] + offset);
   }
-  ctx.lineTo(canvas.width, height * times[data.length - 1] + offset)
+  ctx.lineTo(canvas.width, height * (times[data.length - 1] ? times[data.length - 1] : 0) + offset);
   ctx.stroke();
 };
