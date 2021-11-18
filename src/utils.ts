@@ -1,28 +1,31 @@
+/**
+ * Convert a time to a properly formatted string ("hh:mm:ss" or "d'd' hh:mm" depending on length).
+ * Null will be converted to '0:00'.
+ *
+ * @param time the time to convert to a string
+ * @returns {string} the formatted time
+ */
 export const convertToTimeString = (time: number) => {
   if (!time) return '0:00';
 
-  const hours = Math.floor(time / 3600),
+  const days = Math.floor(time / 86400),
+    hours = Math.floor((time % 86400) / 3600),
     minutes = Math.floor((time % 3600) / 60),
     seconds = time % 60;
-  return `${hours ? `${hours}:${minutes < 10 ? '0' : ''}` : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-};
 
-// different format used for total time because it may be significantly longer TODO instead use the same and build switch if it is too long?
-export const convertToTotalTimeString = (totalTime: number) => {
-  if (!totalTime) return '0:00';
-
-  const days = Math.floor(totalTime / 86400),
-    hours = Math.floor((totalTime % 86400) / 3600),
-    minutes = Math.floor((totalTime % 3600) / 60),
-    seconds = totalTime % 60;
-  return `${days ? `${days}d ` : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
+  // TODO leave it like this or adjust font size to fit and use 'd:hh:mm:ss'
+  if (days === 0) {
+    return `${hours ? `${hours}:${minutes < 10 ? '0' : ''}` : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  } else {
+    return `${days}d ${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
+  }
 };
 
 /**
  * Normalize values in array (between 0 and 1).
  *
  * @param values the array to normalize
- * @param useZeroAsMin TODO
+ * @param useZeroAsMin whether to use zero or the lowest value from array as minimum; default: false (lowest value)
  * @returns {*[]} the array with the normalized values
  */
 export const getNormalizedValues = (values: number[], useZeroAsMin: boolean = false) => {
