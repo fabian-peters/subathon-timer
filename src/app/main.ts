@@ -12,7 +12,7 @@ import config from '../types/config';
 import { reloadListener } from './streamlabs';
 import history from '../types/history';
 import subscription from '../types/subscription';
-import { initTimer, togglePause } from './timer';
+import { initTimer, togglePause, updateAppTimerConfig } from './timer';
 import { convertToTimeString } from '../utils';
 
 let mainWindow: BrowserWindow | undefined;
@@ -133,10 +133,13 @@ ipcMain
     for (let par in newConfig) {
       (config as any)[par] = newConfig[par];
     }
+
     reloadListener(config.streamLabsTokens);
-    updateConfigOnServer(newConfig);
-    // TODO init timer if not started
+    updateAppTimerConfig();
+
+    updateConfigOnServer(newConfig); // TODO filter sensitive information before sending it out to widgets
 
     // close window after config is saved
     settingsWindow.close();
+    console.log("Config updated.")
   });

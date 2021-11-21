@@ -9,7 +9,6 @@ import { updateAppTimer } from './main';
 /*
 TODO
  - update time on config change + app start
- - update timerHistoryInterval if changed in config
  - refactor const to function?
  - refactor other widgets
  - run reformat over all source files
@@ -24,15 +23,22 @@ let timerState = State.NOT_STARTED;
 /** background task to save the timer history */
 let timerSaveHistory: NodeJS.Timer;
 
-// TODO re-implement this for in-app timer:
-//   if (intervalIdDrawLine) { // only update interval, do not start if it isn't running
-//     if (timerHistoryEnabled) {
-//       timerSaveHistory = startTask(timerSaveHistory, saveToTimerHistory, timerHistoryInterval);
-//     } else { // history is disabled but there is still an interval active
-//       clearInterval(timerSaveHistory);
-//       timerSaveHistory = null;
-//     }
-//   }
+/**
+ * TODO
+ */
+export const updateAppTimerConfig = () => {
+  // TODO init timer if not started
+
+  // update timer/interval for saving timer history
+  if (timerState === State.RUNNING || timerState === State.PAUSED) { // only update if timer is running
+    if (config.timerHistoryEnabled) {
+      saveToTimerHistory();
+      timerSaveHistory = startTask(timerSaveHistory, saveToTimerHistory, config.timerHistoryInterval);
+    } else {
+      timerSaveHistory = stopTask(timerSaveHistory);
+    }
+  }
+}
 
 /**
  * Stuff to do every tick, i.e. every second.
@@ -70,8 +76,10 @@ export const togglePause = () => {
   switch (timerState) {
     case State.NOT_STARTED:
       timerState = State.RUNNING;
-      saveToTimerHistory(); // update history to include the initial start
-      timerSaveHistory = startTask(timerSaveHistory, saveToTimerHistory, config.timerHistoryInterval);
+      if (config.timerHistoryEnabled) {
+        saveToTimerHistory(); // update history to include the initial start
+        timerSaveHistory = startTask(timerSaveHistory, saveToTimerHistory, config.timerHistoryInterval);
+      }
       console.log('Timer started!');
       return;
     case State.RUNNING:
