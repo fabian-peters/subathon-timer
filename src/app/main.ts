@@ -12,7 +12,7 @@ import config from '../types/config';
 import { reloadListener } from './streamlabs';
 import history from '../types/history';
 import subscription from '../types/subscription';
-import { initTimer, togglePause, updateAppTimerConfig } from './timer';
+import { initTimer, resumeTimerFrom, togglePause, updateAppTimerConfig } from './timer';
 import { convertToTimeString } from '../utils';
 
 let mainWindow: BrowserWindow | undefined;
@@ -40,7 +40,8 @@ const createMainWindow = () => {
 
     mainWindow.show();
 
-    let initialTime = config.inTime;
+    // initialize timer (time will be overwritten if continued from history)
+    initTimer();
 
     // continue timer from history?
     let lastSavedTime = history.map(item => {
@@ -58,12 +59,9 @@ const createMainWindow = () => {
         detail: `Last time saved in history: ${convertToTimeString(lastSavedTime.time)} on ${new Date(lastSavedTime.timestamp).toLocaleString()}`
       });
       if (response === 0) {
-        initialTime = lastSavedTime.time / 60;
+        resumeTimerFrom(lastSavedTime.time);
       }
     }
-
-    // init timer
-    initTimer(initialTime);
   });
 }
 
