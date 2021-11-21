@@ -13,8 +13,8 @@
 });
 
 (window as any).bridge.on('update-timer', (timeString: string) => {
-  (window as any).timerFront.innerText = timeString;
-  (window as any).timerBackground.innerText = timeString.replace(/\d/g, '8');
+  (window as any).timeFront.innerText = timeString;
+  (window as any).timeBackground.innerText = timeString.replace(/\d/g, '8');
 });
 
 ((window as any).pauseButton as HTMLButtonElement).addEventListener('click', () => (window as any).bridge.send('pause'));

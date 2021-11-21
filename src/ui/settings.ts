@@ -62,3 +62,18 @@
 (window as any).timerHistoryExportButton.addEventListener('click', () => (window as any).bridge.send('history-export'));
 (window as any).subHistoryResetButton.addEventListener('click', () => (window as any).bridge.send('subs-reset'));
 (window as any).subHistoryExportButton.addEventListener('click', () => (window as any).bridge.send('subs-export'));
+
+function showSection(id: string) {
+  const sections = Array.from(document.getElementsByClassName("settings-section"));
+  sections.forEach(div => {
+    if (!div.classList.contains('hide')) { div.classList.add('hide') }
+  });
+
+  document.getElementById(id.replace('-nav','')).classList.remove('hide');
+
+  const navs = Array.from(document.getElementsByClassName("nav-item"));
+  navs.forEach(nav => {
+    if (nav.classList.contains('active')) { nav.classList.remove('active'); }
+  });
+  document.getElementById(id).classList.add('active');
+}

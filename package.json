@@ -17,7 +17,8 @@
     "url": "https://github.com/fabian-peters/"
   },
   "contributors": [
-    "RonanRU"
+    "RonanRU",
+    "jayeclark"
   ],
   "scripts": {
     "bundle": "browserify src/widgets/timer.ts -p [ tsify --noImplicitAny ] -o ./dist/widgets/timer.js && browserify src/widgets/history.ts -p [ tsify --noImplicitAny ] -o ./dist/widgets/history.js && browserify src/widgets/subs.ts -p [ tsify --noImplicitAny ] -o ./dist/widgets/subs.js",

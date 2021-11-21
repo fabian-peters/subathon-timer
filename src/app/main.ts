@@ -102,8 +102,8 @@ const createSettingsWindow = () => {
   settingsWindow = new BrowserWindow({
     modal: true,
     parent: mainWindow,
-    width: 400,
-    height: 800,
+    width: 430,
+    height: 400,
     show: false,
     webPreferences: webPreferences
   });
