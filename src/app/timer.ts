@@ -8,7 +8,6 @@ import { updateAppTimer } from './main';
 
 /*
 TODO
- - update time on config change + app start
  - refactor const to function?
  - refactor other widgets
  - run reformat over all source files
@@ -24,10 +23,12 @@ let timerState = State.NOT_STARTED;
 let timerSaveHistory: NodeJS.Timer;
 
 /**
- * TODO
+ * Update the time and "save history" interval to new config.
  */
 export const updateAppTimerConfig = () => {
-  // TODO init timer if not started
+  if (timerState === State.NOT_STARTED) {
+    initTimer();
+  }
 
   // update timer/interval for saving timer history
   if (timerState === State.RUNNING || timerState === State.PAUSED) { // only update if timer is running
@@ -52,17 +53,39 @@ startTask(null, tick, 1); // run all the time so don't store the id
 
 /**
  * Initialize/reset the timer (without starting it).
- * This also stops any running background task like the countdown.
- *
- * @param initialTime the initial time of the timer (default: initial time from config)
+ * This also stops any running background task like saving the timer history.
  */
-export const initTimer = (initialTime: number = config.inTime) => {
+export const initTimer = () => {
   // make sure background tasks are not running
   timerSaveHistory = stopTask(timerSaveHistory);
 
   // reset timer
-  timerState = initialTime > 0 ? State.NOT_STARTED : State.FINISHED;
-  setTime(Math.floor(initialTime * 60));
+  const initialTimeSeconds = Math.floor(config.inTime * 60);
+  timerState = initialTimeSeconds > 0 ? State.NOT_STARTED : State.FINISHED;
+  setTime(initialTimeSeconds);
+
+  updateAllWidgets();
+};
+
+/**
+ * Resume the timer from the specified time (if it isn't already running), e.g. from history.
+ * This sets the time and brings the timer to the correct state
+ *
+ * @param resumeTimeSeconds the time in seconds
+ */
+export const resumeTimerFrom = (resumeTimeSeconds: number) => {
+  if (timerState !== State.NOT_STARTED) return;
+
+  setTime(resumeTimeSeconds);
+
+  if (resumeTimeSeconds > 0) {
+    // toggle pause twice to get to correct state while also triggering initial start stuff etc.
+    togglePause();
+    togglePause();
+  } else {
+    // timer was already finished
+    timerState = State.FINISHED;
+  }
 
   updateAllWidgets();
 };
