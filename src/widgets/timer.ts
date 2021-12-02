@@ -69,7 +69,7 @@ socket.on('animate-timer', (additionalTime: number) => {
  *
  * @param config the config containing the new values that should be used
  */
-const updateConfig = (config: Config) => { // TODO remove token before sending?
+const updateConfig = (config: Config) => {
   // update colors
   document.querySelector('div').style.background = config.bgColor;
   document.querySelector('p').style.color = config.timerColor;

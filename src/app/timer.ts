@@ -9,7 +9,6 @@ import { updateAppTimer } from './main';
 /*
 TODO
  - refactor const to function?
- - refactor other widgets
  - run reformat over all source files
  */
 
@@ -163,7 +162,7 @@ const setTime = (newTime: number) => {
  * TODO
  */
 export const getDataForWidgets = () => {
-  return new WidgetData(timerState, false, time); // TODO implement timer cap, total time and total subs
+  return new WidgetData(timerState, false, time); // TODO [#20] implement timer cap
 }
 
 /**
