@@ -159,7 +159,9 @@ const setTime = (newTime: number) => {
 };
 
 /**
- * TODO
+ * Prepares the {@link WidgetData} for updating the widgets with the current data.
+ *
+ * @return the updated data to send to the widgets
  */
 export const getDataForWidgets = () => {
   return new WidgetData(timerState, false, time); // TODO [#20] implement timer cap
