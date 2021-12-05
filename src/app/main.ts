@@ -103,7 +103,7 @@ const createSettingsWindow = () => {
     modal: true,
     parent: mainWindow,
     width: 430,
-    height: 400,
+    height: 430,
     show: false,
     webPreferences: webPreferences
   });
