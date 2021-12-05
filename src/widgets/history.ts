@@ -5,8 +5,6 @@ import { convertToTimeString, getNormalizedValues } from '../utils';
 
 const io = require("socket.io/client-dist/socket.io.min"); // use socket.io/client-dist instead of socket.io-client because streamlabs requires older client version
 
-// TODO clean up code, add comments (like timer.js)
-
 // graph
 let timerHistory: History[] = []; // cache history to update graph if config changes
 const canvas = document.getElementsByTagName('canvas')[0];
