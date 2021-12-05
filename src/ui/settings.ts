@@ -1,9 +1,10 @@
-(window as any).bridge.on('config', (config: any) => {
-  (window as any).running.innerText = `Widget is running on http://localhost:${config.port}`;
+(window as any).bridge.on('load-config', (config: any) => {
   (window as any).streamLabsTokenInput.value = config.streamLabsTokens;
   (window as any).addTimeTier1Input.value = config.addTimeTier1;
   (window as any).addTimeTier2Input.value = config.addTimeTier2;
   (window as any).addTimeTier3Input.value = config.addTimeTier3;
+  (window as any).addTimeBeforeStartInput.checked = config.addTimeBeforeStart;
+  (window as any).addTimePausedInput.checked = config.addTimePaused;
   (window as any).portInput.value = config.port;
   (window as any).inTimeInput.value = config.inTime;
   (window as any).timespanInput.value = config.timespan;
@@ -23,33 +24,9 @@
   (window as any).subHistoryRefreshInput.value = config.subHistoryRefresh;
 });
 
-(window as any).bridge.on('update-start-times', (startTimes: any) => {
-  if (isNaN(startTimes.history)) {
-    (window as any).historyStart.innerText = `No timer history found`;
-  } else {
-    (window as any).historyStart.innerText = `Timer history started at ${startTimes.history.toLocaleString()}`;
-  }
-
-  if (isNaN(startTimes.subs)) {
-    (window as any).subsStart.innerText = `No sub history found`;
-  } else {
-    (window as any).subsStart.innerText = `Sub history started at ${startTimes.subs.toLocaleString()}`;
-  }
-});
-
-const changePage = (page: 0 | 1) => {
-  (window as any).settings.style.display = ['none', 'flex'][page];
-  (window as any).info.style.display = ['unset', 'none'][page];
-};
-
-(window as any).settingsButton.addEventListener('click', () => changePage(1));
-
-(window as any).backButton.addEventListener('click', () => changePage(0));
-
 ((window as any).settings as HTMLFormElement).addEventListener('submit', e => {
   e.preventDefault();
-  (window as any).running.innerText = `Widget is running on http://localhost:${Number((window as any).portInput.value)}`;
-  (window as any).bridge.send('config', {
+  (window as any).bridge.send('save-config', {
     streamLabsTokens: (window as any).streamLabsTokenInput.value
       .split(',')
       .map((token: string) => token.trim())
@@ -59,6 +36,8 @@ const changePage = (page: 0 | 1) => {
     addTimeTier1: (window as any).addTimeTier1Input.valueAsNumber,
     addTimeTier2: (window as any).addTimeTier2Input.valueAsNumber,
     addTimeTier3: (window as any).addTimeTier3Input.valueAsNumber,
+    addTimeBeforeStart: (window as any).addTimeBeforeStartInput.checked,
+    addTimePaused: (window as any).addTimePausedInput.checked,
     inTime: (window as any).inTimeInput.valueAsNumber,
     timespan: (window as any).timespanInput.valueAsNumber,
     refreshInterval: (window as any).refreshIntervalInput.valueAsNumber,
@@ -76,12 +55,25 @@ const changePage = (page: 0 | 1) => {
     subHistoryShowTotal: (window as any).subHistoryShowTotalInput.checked,
     subHistoryRefresh: (window as any).subHistoryRefreshInput.valueAsNumber
   });
-  changePage(0);
 });
 
-((window as any).pauseButton as HTMLButtonElement).addEventListener('click', () => (window as any).bridge.send('pause'));
-((window as any).stopButton as HTMLButtonElement).addEventListener('click', () => (window as any).bridge.send('stop')); // TODO add confirmation?
+(window as any).backButton.addEventListener('click', () => (window as any).bridge.send('close-settings'));
 (window as any).timerHistoryResetButton.addEventListener('click', () => (window as any).bridge.send('history-reset'));
 (window as any).timerHistoryExportButton.addEventListener('click', () => (window as any).bridge.send('history-export'));
 (window as any).subHistoryResetButton.addEventListener('click', () => (window as any).bridge.send('subs-reset'));
 (window as any).subHistoryExportButton.addEventListener('click', () => (window as any).bridge.send('subs-export'));
+
+function showSection(id: string) {
+  const sections = Array.from(document.getElementsByClassName("settings-section"));
+  sections.forEach(div => {
+    if (!div.classList.contains('hide')) { div.classList.add('hide') }
+  });
+
+  document.getElementById(id.replace('-nav','')).classList.remove('hide');
+
+  const navs = Array.from(document.getElementsByClassName("nav-item"));
+  navs.forEach(nav => {
+    if (nav.classList.contains('active')) { nav.classList.remove('active'); }
+  });
+  document.getElementById(id).classList.add('active');
+}

@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { readFile } from './config';
 
 export interface Subscription {
   timestamp: Date;
@@ -6,7 +7,7 @@ export interface Subscription {
   tier: string;
 }
 
-export default new Proxy(JSON.parse(fs.readFileSync('./subs.json').toString()) as [Subscription], {
+export default new Proxy(readFile('./subs.json', '[]') as Subscription[], {
   set: (obj, prop, value) => {
     (obj as any)[prop] = value;
     fs.writeFileSync('./subs.json', JSON.stringify(obj, null, '  '));

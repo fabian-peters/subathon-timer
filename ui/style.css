@@ -1,3 +1,7 @@
+@font-face {
+  font-family: "DESG7";
+  src: url("../resources/fonts/DSEG_v046/DSEG7Classic-Bold.woff2") format('woff2');
+}
 body {
   color: white;
   background: #272727;
@@ -23,6 +27,28 @@ body {
 }
 .controls svg:active {
   opacity: 0.5;
+}
+#time {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  height: 65px;
+}
+.display {
+  font-family: "DESG7", sans-serif;
+  font-size: 50px;
+
+  position: absolute;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+.background {
+  opacity: 8%;
 }
 
 /* Settings Page Styles */
@@ -122,6 +148,12 @@ textarea {
 button {
   cursor: pointer;
 }
+button:hover {
+  background-color: #5e5e5e;
+}
+button:active {
+  background-color: #454545;
+}
 .colorInputContainer {
   flex-wrap: nowrap;
   flex-direction: row !important;
@@ -154,8 +186,8 @@ button {
   justify-content: space-around;
   align-items: center;
 }
-.input-lockup input, 
-.input-lockup textarea, 
+.input-lockup input,
+.input-lockup textarea,
 .input-lockup label,
 .input-lockup .label-div,
 .colorInputContainer label,
@@ -178,7 +210,11 @@ button {
   margin: auto;
 }
 .form-submission button[type="submit"]:hover {
-  background-color: rgb(77, 143, 250);
+  background-color: rgb(61, 131, 246);
+}
+.form-submission button[type="submit"]:active {
+  /*background-color: rgb(109, 163, 250);*/
+  background-color: rgb(12, 100, 244);
 }
 
 /* Styling shortcodes */

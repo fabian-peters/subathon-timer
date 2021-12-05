@@ -1,23 +1,23 @@
 import * as express from 'express';
-import type { Socket } from 'socket.io';
 import { Server } from 'socket.io';
 import * as http from 'http';
 import * as path from 'path';
-import type { Config } from './types/config';
-import config from './types/config';
-import type { History } from './types/history';
-import history from './types/history';
+import type { Config } from '../types/config';
+import config from '../types/config';
+import type { History } from '../types/history';
+import history from '../types/history';
 import { dialog } from 'electron';
 import * as fs from 'fs';
-import subscription, { Subscription } from './types/subscription';
+import subscription, { Subscription } from '../types/subscription';
 import { sendStartTimes } from './main';
+import { getDataForWidgets, increaseTimer } from './timer';
+import { WidgetData } from '../types/widgetData';
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-let inTime = config.inTime;
-let addTimeTier1 = config.addTimeTier1;
+let addTimeTier1 = config.addTimeTier1; // TODO store values, store config or read directly
 let addTimeTier2 = config.addTimeTier2;
 let addTimeTier3 = config.addTimeTier3;
 
@@ -28,10 +28,11 @@ export const startServer = () => {
       return;
     } else {
       console.log(`Restarting server on new port '${config.port}...'`);
-      if (socketTimer) socketTimer.disconnect();
-      if (socketHistory) socketHistory.disconnect();
+      io.of('/timer').disconnectSockets(true);
+      io.of('/history').disconnectSockets(true);
+      io.of('/subs').disconnectSockets(true);
       server.close(() => {
-        server.listen(config.port) // restart on new port when server is closed
+        server.listen(config.port); // restart on new port when server is closed
         console.log('Restarted server on ', server.address());
       });
     }
@@ -39,55 +40,60 @@ export const startServer = () => {
     server.listen(config.port);
     console.log('Started server on ', server.address());
   }
-}
+};
 
-app.get('/', (_req, res) => res.sendFile(path.join(__dirname, '..', 'resources/widget.html')));
-app.get('/history', (_req, res) => res.sendFile(path.join(__dirname, '..', 'resources/history.html')));
-app.get('/subs', (_req, res) => res.sendFile(path.join(__dirname, '..', 'resources/subs.html')));
-app.get('/socket.io.js', (_req, res) => res.sendFile(path.join(__dirname, '..', 'node_modules', 'socket.io', 'client-dist', 'socket.io.min.js'))); // TODO reference directly so IDE can pick it up
+app.get('/', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widgets', 'timer.html')));
+app.get('/history', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widgets', 'history.html')));
+app.get('/subs', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widgets', 'subs.html')));
+app.get('/widgets.css', (_req, res) => res.sendFile(path.join(__dirname, '..', '..', 'widgets', 'widgets.css')));
+app.use(express.static(path.join(__dirname, '..', '..', 'dist', 'widgets'))); // widget scripts
 
-let socketTimer: Socket | undefined;
-let socketHistory: Socket | undefined;
-let socketSubs: Socket | undefined;
+io.of('/timer').on('connection', socket => {
+  console.log('Timer widget connected.');
+  socket.on('disconnect', (reason: string) => console.log(`Timer widget disconnected (${reason}).`));
 
-io.of('/history').on('connection', s => {
-  // TODO allows multiple widget? store in array (not for timer!)
-  if (socketHistory) socketHistory.emit('error', 'only one history widget allowed');
-  socketHistory = s;
-  socketHistory.emit('config', config);
-  socketHistory.emit('history-data', history);
+  // initially load config and data
+  socket.emit('config', config);
+  socket.emit('update', getDataForWidgets());
 });
 
-io.of('/subs').on('connection', s => {
-  // TODO allows multiple widget? store in array (not for timer!)
-  if (socketSubs) socketSubs.emit('error', 'only one sub history widget allowed');
-  socketSubs = s;
-  socketSubs.emit('config', config);
-  socketSubs.emit('subs-data', subscription);
+io.of('/history').on('connection', socket => {
+  console.log('History widget connected.');
+  socket.on('disconnect', (reason: string) => console.log(`History widget disconnected (${reason}).`));
+
+  // initially load config and data
+  socket.emit('config', config);
+  socket.emit('update', getDataForWidgets());
+  socket.emit('history-data', history);
 });
 
-io.of('/timer').on('connection', s => {
-  if (socketTimer) socketTimer.emit('error', 'only one timer widget allowed');
-  socketTimer = s;
-  socketTimer.on('history', saveHistory);
-  socketTimer.emit('config', config);
-  socketTimer.emit('init', inTime);
+io.of('/subs').on('connection', socket => {
+  console.log('Subs widget connected.');
+  socket.on('disconnect', (reason: string) => console.log(`Subs widget disconnected (${reason}).`));
+
+  // initially load config and data
+  socket.emit('config', config);
+  socket.emit('update', getDataForWidgets());
+  socket.emit('subs-data', subscription);
 });
 
-const saveHistory = (historyEntry: History) => {
+export const saveHistory = (historyEntry: History) => {
   history.push(historyEntry);
-  socketHistory && socketHistory.emit('history-data', history);
+  io.of('/history').emit('history-data', history);
   sendStartTimes();
 }
 
-export const resetHistory = () => { // TODO ask to reset when pressing stop?
+export const resetHistory = () => {
   history.splice(0, history.length); // cannot assign empty so use splice to remove all entries
-  socketHistory && socketHistory.emit('history-data', history);
+  updateAllWidgets();
+  io.of('/history').emit('history-data', history);
+  io.of('/history').emit('update', getDataForWidgets());
   sendStartTimes();
 }
 
 // TODO improve export: make picture bigger, prettier, increase resolution
 export const exportHistory = () => {
+  let [socketHistory] = io.of('/history').sockets.values();
   if (socketHistory) {
     socketHistory.emit('history-data', history); // make sure latest data is available
     socketHistory.emit('history-export', config.bgColor, (dataUrl: string) => {
@@ -97,7 +103,7 @@ export const exportHistory = () => {
       // generate path
       let date = new Date().toISOString();
       date = date.substring(0, date.lastIndexOf('.')).replace(/[.:T]/g, '-');
-      let defaultName = path.join(__dirname, '..', 'history-' + date + '.png');
+      let defaultName = path.join(__dirname, '..', '..', 'history-' + date + '.png');
 
       // open dialog to save file
       let filename = dialog.showSaveDialogSync({ title: 'Save History as .png', defaultPath: defaultName });
@@ -107,18 +113,20 @@ export const exportHistory = () => {
     });
   } else {
     // history widget must be running TODO make export available without widget
-    dialog.showErrorBox('Error exporting history', 'Could not export history because the history widget is not connected.');
+    dialog.showErrorBox('Error exporting history', 'Could not export history because no history widget is connected.');
   }
 }
 
-export const resetSubHistory = () => { // TODO ask to reset when pressing stop?
+export const resetSubHistory = () => {
   subscription.splice(0, subscription.length); // cannot assign empty so use splice to remove all entries
-  socketSubs && socketSubs.emit('subs-data', subscription);
+  io.of('/subs').emit('subs-data', subscription);
+  io.of('/subs').emit('update', getDataForWidgets());
   sendStartTimes();
 }
 
 // TODO improve export: make picture bigger, prettier, increase resolution
 export const exportSubHistory = () => {
+  let [socketSubs] = io.of('/subs').sockets.values();
   if (socketSubs) {
     socketSubs.emit('subs-data', subscription); // make sure latest data is available
     socketSubs.emit('subs-export', config.bgColor, (dataUrl: string) => {
@@ -128,7 +136,7 @@ export const exportSubHistory = () => {
       // generate path
       let date = new Date().toISOString();
       date = date.substring(0, date.lastIndexOf('.')).replace(/[.:T]/g, '-');
-      let defaultName = path.join(__dirname, '..', 'subs-' + date + '.png');
+      let defaultName = path.join(__dirname, '..', '..', 'subs-' + date + '.png');
 
       // open dialog to save file
       let filename = dialog.showSaveDialogSync({ title: 'Save Sub History as .png', defaultPath: defaultName });
@@ -138,7 +146,7 @@ export const exportSubHistory = () => {
     });
   } else {
     // subs widget must be running TODO make export available without widget
-    dialog.showErrorBox('Error exporting sub history', 'Could not export sub history because the subs widget is not connected.');
+    dialog.showErrorBox('Error exporting sub history', 'Could not export sub history because no subs widget is connected.');
   }
 }
 
@@ -161,19 +169,24 @@ export const updateConfigOnServer = (newConfig: Config) => {
   addTimeTier1 = newConfig.addTimeTier1;
   addTimeTier2 = newConfig.addTimeTier2;
   addTimeTier3 = newConfig.addTimeTier3;
-  inTime = newConfig.inTime;
 
-  socketTimer && socketTimer.emit('config', newConfig);
-  socketHistory && socketHistory.emit('config', newConfig);
-  socketSubs && socketSubs.emit('config', newConfig);
+  io.of('/timer').emit('config', newConfig);
+  io.of('/history').emit('config', newConfig);
+  io.of('/subs').emit('config', newConfig);
 };
 
-export const sendPause = () => socketTimer && socketTimer.emit('pause');
+export const updateAllWidgets = () => {
+  const data: WidgetData = getDataForWidgets();
+  io.of('/timer').emit('update', data);
+  io.of('/history').emit('update', data);
+  io.of('/subs').emit('update', data);
+}
 
-export const sendInit = () => socketTimer && socketTimer.emit('init', inTime);
+export const animateTimerInWidget = (additionalTime: number) => {
+  io.of('/timer').emit('animate-timer', additionalTime);
+};
 
 export const sendSub = (sub: Subscription) => {
-  // TODO [#15] disable before timer was initially started
   // add time to timer
   let addTime;
   switch (sub.tier) {
@@ -186,15 +199,16 @@ export const sendSub = (sub: Subscription) => {
       default: // Tier 1 = "1000", Prime might be "1" or "1000", and everything else should fallback to tier 1
           addTime = addTimeTier1;
   }
-  socketTimer && socketTimer.emit('sub', addTime);
+  increaseTimer(addTime);
 
   // add sub to history
   // apparently 'sub' does not include info who gifted the sub so we cannot create a cumulative gift count per user
   //  -> update as soon as that information is available in API
-  if (config.subHistoryEnabled) {
+  if (config.subHistoryEnabled) { // TODO add same settings as increaseTimer for subCount? if yes, use separate settings
     subscription.push(sub);
-    socketSubs && socketSubs.emit('subs-data', subscription);
+    io.of('/subs').emit('subs-data', subscription);
   }
 
+  updateAllWidgets();
   sendStartTimes();
 }

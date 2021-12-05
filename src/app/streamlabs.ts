@@ -19,12 +19,19 @@ const listenForSubs = (token: string) => {
       }
     }
   });
+  socket.on("connect_error", (err: any) => {
+    console.log(`Streamlabs connection failed. Reason: ${err.message}`);
+  });
 };
 
 export const reloadListener = (tokens: string[]): void => {
-  // first, disconnect ALL sockets
-  for (const socket of sockets) {
-    if (socket) socket.disconnect();
+  // first, disconnect ALL sockets (log if not successful)
+  sockets = sockets
+    .filter(socket => socket)
+    .map(socket => socket.disconnect())
+    .filter(socket => socket.connected);
+  if (sockets.length > 0) {
+    console.log(`WARN: ${sockets.length} socket${sockets.length === 1 ? ' is' : 's are'} still connected.`);
   }
 
   // then open new sockets only for the tokens that were provided (may be more or less then previously)
