@@ -87,6 +87,7 @@ export const resetHistory = () => {
   history.splice(0, history.length); // cannot assign empty so use splice to remove all entries
   updateAllWidgets();
   io.of('/history').emit('history-data', history);
+  io.of('/history').emit('update', getDataForWidgets());
   sendStartTimes();
 }
 
@@ -119,6 +120,7 @@ export const exportHistory = () => {
 export const resetSubHistory = () => {
   subscription.splice(0, subscription.length); // cannot assign empty so use splice to remove all entries
   io.of('/subs').emit('subs-data', subscription);
+  io.of('/subs').emit('update', getDataForWidgets());
   sendStartTimes();
 }
 
