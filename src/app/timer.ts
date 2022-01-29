@@ -15,6 +15,9 @@ TODO
 /** the current time of the timer */
 let time = 0;
 
+/** the timestamp when the timer was started */
+let timerStart: Date;
+
 /** the current state of the timer, e.g. is it running/paused? */
 let timerState = State.NOT_STARTED;
 
@@ -59,6 +62,7 @@ export const initTimer = () => {
   timerSaveHistory = stopTask(timerSaveHistory);
 
   // reset timer
+  timerStart = null;
   const initialTimeSeconds = Math.floor(config.inTime * 60);
   timerState = initialTimeSeconds > 0 ? State.NOT_STARTED : State.FINISHED;
   setTime(initialTimeSeconds);
@@ -75,6 +79,7 @@ export const initTimer = () => {
 export const resumeTimerFrom = (resumeTimeSeconds: number) => {
   if (timerState !== State.NOT_STARTED) return;
 
+  timerStart = getDataForWidgets().startTimestamp; // TODO only if enabled?
   setTime(resumeTimeSeconds);
 
   if (resumeTimeSeconds > 0) {
@@ -98,6 +103,9 @@ export const togglePause = () => {
   switch (timerState) {
     case State.NOT_STARTED:
       timerState = State.RUNNING;
+      if (!timerStart) {
+        timerStart = new Date();
+      }
       if (config.timerHistoryEnabled) {
         saveToTimerHistory(); // update history to include the initial start
         timerSaveHistory = startTask(timerSaveHistory, saveToTimerHistory, config.timerHistoryInterval);
